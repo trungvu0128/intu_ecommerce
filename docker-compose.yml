@@ -63,8 +63,8 @@ services:
       - JwtSettings__Secret=${JWT_SECRET}
     ports:
       - "5000:8080"
-#    depends_on:
-#      - db
+    depends_on:
+      - db
 #      - redis
 #      - meili
 
