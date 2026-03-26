@@ -1,0 +1,71 @@
+
+> client-next@0.1.0 lint
+> eslint
+
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\app\contact\page.tsx
+  16:13  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\category\CategoryHero.tsx
+  34:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\checkout\OrderSummary.tsx
+  35:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\home\Banner.tsx
+  15:7  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\home\ProductCard.tsx
+  43:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  54:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\layout\Footer.tsx
+  22:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\product\ImageGallery.tsx
+  26:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  45:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\screens\About.tsx
+   72:77   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   72:86   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  109:139  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\screens\Checkout.tsx
+  24:17  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\screens\PaymentSuccess.tsx
+  11:61  error  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\screens\PaymentSuccess.tsx:11:61
+   9 | const PaymentSuccess = () => {
+  10 |   const searchParams = useSearchParams();
+> 11 |   const orderCode = searchParams.get("order") || "WEB03-" + Date.now();
+     |                                                             ^^^^^^^^^^ Cannot call impure function
+  12 |   const [show, setShow] = useState(false);
+  13 |
+  14 |   useEffect(() => {  react-hooks/purity
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\screens\Shop.tsx
+  147:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\Admin\Desktop\Work\OutSource\lotus-ecommerce\client-next\src\components\screens\Shop.tsx:147:5
+  145 |   // Reset visible count when filters/sort change
+  146 |   useEffect(() => {
+> 147 |     setVisibleCount(ITEMS_PER_PAGE);
+      |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  148 |   }, [sortBy]);
+  149 |
+  150 |   const activeFilterCount =  react-hooks/set-state-in-effect
+  164:18  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react/no-unescaped-entities
+
+✖ 16 problems (7 errors, 9 warnings)
+
