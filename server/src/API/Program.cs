@@ -31,7 +31,7 @@ builder.Services.AddScoped<ISePayService, SePayService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientNext", policy => 
-        policy.WithOrigins("http://localhost:3000", "http://localhost:5174")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials());

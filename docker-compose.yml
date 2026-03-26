@@ -85,6 +85,11 @@ services:
     restart: always
     ports:
       - "3000:3000"
+    volumes:
+      - ./client-next:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:
@@ -94,10 +99,16 @@ services:
     build:
       context: ./cms
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
     container_name: lotus-cms
     restart: always
     ports:
-      - "5173:80"
+      - "5173:5173"
+    volumes:
+      - ./cms:/app
+      - /app/node_modules
+    command: npm run dev
     environment:
       - VITE_API_URL=${VITE_API_URL}
     depends_on:
