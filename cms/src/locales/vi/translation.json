@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "dashboard": "Bảng điều khiển",
+    "products": "Sản phẩm",
+    "inventory": "Tồn kho",
+    "goodReceipt": "Nhập kho",
+    "goodIssue": "Xuất kho",
+    "invReasons": "Lý do X/N",
+    "orders": "Đơn hàng",
+    "categories": "Danh mục",
+    "banners": "Banners",
+    "featuredSections": "Mục nổi bật",
+    "blogs": "Bài viết",
+    "coupons": "Mã giảm giá",
+    "users": "Tài khoản QT",
+    "customers": "Khách hàng",
+    "logout": "Đăng xuất",
+    "brand": "Lotus CMS"
+  },
+  "common": {
+    "language": "Ngôn ngữ",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}

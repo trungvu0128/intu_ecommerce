@@ -1,0 +1,25 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "inventory": "Inventory",
+    "goodReceipt": "Good Receipt",
+    "goodIssue": "Good Issue",
+    "invReasons": "Inv. Reasons",
+    "orders": "Orders",
+    "categories": "Categories",
+    "banners": "Banners",
+    "featuredSections": "Featured Sections",
+    "blogs": "Blogs",
+    "coupons": "Coupons",
+    "users": "Accounts",
+    "customers": "Customers",
+    "logout": "Logout",
+    "brand": "Lotus CMS"
+  },
+  "common": {
+    "language": "Language",
+    "en": "English",
+    "vi": "Tiếng Việt"
+  }
+}

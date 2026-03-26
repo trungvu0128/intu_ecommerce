@@ -15,6 +15,7 @@ Thumbs.db
 !appsettings.json
 !appsettings.*.json
 !server/src/API/appsettings.json
+!**/locales/**/*.json
 *.p12
 *.key
 *.pem
