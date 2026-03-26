@@ -37,6 +37,7 @@ builder.Services.AddCors(options =>
             "https://intuoo.trungvudev.xyz",
             "http://cms.trungvudev.xyz",
             "https://cms.trungvudev.xyz",
+            "http://14.255.224.19",
             // Local development
             "http://localhost:3000",
             "http://localhost:5173"
