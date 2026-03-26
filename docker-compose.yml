@@ -82,6 +82,7 @@ services:
         - NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: lotus-client
+    user: root
     restart: always
     ports:
       - "3000:3000"
@@ -102,6 +103,7 @@ services:
       args:
         - VITE_API_URL=${VITE_API_URL}
     container_name: lotus-cms
+    user: root
     restart: always
     ports:
       - "5173:5173"
