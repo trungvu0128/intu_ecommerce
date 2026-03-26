@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.env
+.env.local
+.eslintcache
+*.log
+npm-debug.log*
+.vscode
+.idea
+.DS_Store
+Dockerfile
+docker-compose.yml
