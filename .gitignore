@@ -1,0 +1,67 @@
+# --- General ---
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example
+*.json
+!package.json
+!tsconfig*.json
+!.trae/**/*.json
+!server/src/API/Properties/launchSettings.json
+!server/src/Application/DTOs/Payment/SePayIpnRequest.cs
+!server/src/Application/Services/SePayService.cs
+# Re-including some standard project files
+!appsettings.json
+!appsettings.*.json
+!server/src/API/appsettings.json
+*.p12
+*.key
+*.pem
+*.jks
+*-service-account.json
+firebase-service-account.json
+# --- Node/Frontend ---
+node_modules/
+dist/
+dist-ssr/
+*.local
+.npm
+.eslintcache
+.stylelintcache
+*.log
+.cache/
+.next/
+out/
+build/
+
+# --- .NET/Server ---
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+*.nupkg
+*.snupkg
+.nuget/
+
+# --- Local Tools/Recovered Files ---
+recovered_*.cs
+recovered_all.cs
+recovered_old.cs
+recovered_all_utf8.cs
+recovered_old_utf8.cs
+HistoryBackup/
+tools/
+build_output.txt
+file_structure.txt
+recovered_order_service.cs
+recovered_order_dto.cs
+recovered_checkout_dto.cs
+recovered_checkout_item_dto.cs
+server/build_output.txt
+server/src/API/build_err*.txt
+server/src/API/build_output.txt

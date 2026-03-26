@@ -1,0 +1,6 @@
+@LotusEcommerce.API_HostAddress = http://localhost:5039
+
+GET {{LotusEcommerce.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

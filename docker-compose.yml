@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lotus-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: lotus_ecommerce
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+    image: redis:7-alpine
+    container_name: lotus-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ./server
+      dockerfile: src/API/Dockerfile
+    container_name: lotus-api
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=lotus_ecommerce;Username=postgres;Password=password
+      - Redis__ConnectionString=redis:6379
+      - Telegram__BotToken=${TELEGRAM_BOT_TOKEN}
+      - Telegram__ChatId=${TELEGRAM_CHAT_ID}
+    ports:
+      - "5000:8080"
+    depends_on:
+      - db
+      - redis
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: lotus-client
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
