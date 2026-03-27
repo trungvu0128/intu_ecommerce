@@ -1,4 +1,8 @@
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE "Banners" (
+
     "Id" uuid NOT NULL,
     "Title" text,
     "ImageUrl" text NOT NULL,
