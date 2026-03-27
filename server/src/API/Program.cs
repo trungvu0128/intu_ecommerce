@@ -31,17 +31,7 @@ builder.Services.AddScoped<ISePayService, SePayService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowClientNext", policy => 
-        policy.WithOrigins(
-            // Production (VPS via Nginx)
-            "http://intuoo.trungvudev.xyz",
-            "https://intuoo.trungvudev.xyz",
-            "http://cms.trungvudev.xyz",
-            "https://cms.trungvudev.xyz",
-            "http://14.255.224.19",
-            // Local development
-            "http://localhost:3000",
-            "http://localhost:5173"
-        )
+        policy.SetIsOriginAllowed(_ => true)
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials());
