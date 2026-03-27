@@ -116,8 +116,7 @@ services:
   cms:
     build:
       context: ./cms
-      dockerfile: Dockerfile
-      target: build
+      dockerfile: Dockerfile.dev
       args:
         - VITE_API_URL=${VITE_API_URL}
     container_name: lotus-cms
