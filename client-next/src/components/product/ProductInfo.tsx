@@ -20,7 +20,7 @@ interface ProductInfoProps {
   styleId: string;
 }
 
-const ProductInfo = ({ id, name, price, image, image2, sizes, description, styleId }: ProductInfoProps) => {
+const ProductInfo = ({ id, slug, name, price, image, image2, sizes, variants, description, styleId }: ProductInfoProps) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -32,21 +32,35 @@ const ProductInfo = ({ id, name, price, image, image2, sizes, description, style
   const decrementQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = () => {
+    if (sizes.length > 0 && !selectedSize) {
+      alert('Vui lòng chọn size');
+      return false;
+    }
+
+    const selectedVariant = variants?.find(v => v.size === selectedSize);
+    const variantId = selectedVariant ? selectedVariant.id : id;
+
     addItem({
-      id,
-      name,
+      id: variantId,
+      productId: id,
+      name: `${name}${selectedSize ? ` - Size ${selectedSize}` : ''}`,
       price,
       image,
       image2,
+      slug,
+      quantity,
     });
     
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
+    return true;
   };
 
   const handleBuyNow = () => {
-    handleAddToCart();
-    router.push('/checkout');
+    const added = handleAddToCart();
+    if (added) {
+      router.push('/checkout');
+    }
   };
 
   return (

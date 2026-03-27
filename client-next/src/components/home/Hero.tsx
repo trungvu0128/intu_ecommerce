@@ -19,12 +19,6 @@ const Hero = () => {
         <div className="absolute inset-0 bg-black/20"></div>
       </div>
 
-      {/* Center Content: VIDEO Text */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <h1 className="text-6xl md:text-9xl font-bold italic tracking-tighter opacity-80 mix-blend-overlay">
-          VIDEO
-        </h1>
-      </div>
 
       {/* Bottom Content: Tagline */}
       <div className="absolute bottom-8 left-0 w-full z-10 flex flex-col items-center justify-center gap-1">

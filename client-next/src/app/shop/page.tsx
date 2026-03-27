@@ -1,17 +1,5 @@
-'use client';
-
-import { Suspense } from 'react';
-import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
-import Shop from '@/components/screens/Shop';
-import MobileShop from '@/components/mobile/screens/MobileShop';
+import { redirect } from 'next/navigation';
 
 export default function ShopPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <DeviceSwitch
-        mobile={() => <MobileShop />}
-        desktop={() => <Shop />}
-      />
-    </Suspense>
-  );
+  redirect('/category/shop-all');
 }

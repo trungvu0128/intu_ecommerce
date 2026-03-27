@@ -37,7 +37,7 @@ const NavbarDesktop = () => {
     const controlNavbar = () => {
       if (typeof window !== 'undefined') {
         const currentScrollY = window.scrollY;
-        
+
         // Show navbar if scrolling up or at the very top
         if (currentScrollY < lastScrollY || currentScrollY < 50) {
           setIsVisible(true);
@@ -45,7 +45,7 @@ const NavbarDesktop = () => {
           // Hide navbar only after scrolling down a bit (100px) and scrolling down
           setIsVisible(false);
         }
-        
+
         setLastScrollY(currentScrollY);
       }
     };
@@ -75,7 +75,7 @@ const NavbarDesktop = () => {
   return (
     <>
       <nav className={cn(
-        "fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 pointer-events-none transition-all duration-500",
+        "fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 md:px-12 lg:px-20 py-4 md:py-8 pointer-events-none transition-all duration-500",
         isHome ? "text-white" : "text-black bg-white/95 backdrop-blur-sm border-b border-black/5",
         isVisible ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
       )}>
@@ -83,8 +83,8 @@ const NavbarDesktop = () => {
         <div className={cn(
           "flex-1 pointer-events-auto"
         )}>
-          <Link 
-            href="/contact" 
+          <Link
+            href="/contact"
             className={cn(
               "text-xs tracking-wider font-medium hover:opacity-70 transition-opacity flex items-center gap-1",
               isHome && "mix-blend-difference"
@@ -99,21 +99,21 @@ const NavbarDesktop = () => {
           "flex-1 flex justify-center pointer-events-auto"
         )}>
           <Link href="/">
-            <Image 
-              src={isHome ? logoWhite : logoBlack} 
-              alt="INTU" 
-              className={cn("h-8 lg:h-10 w-auto", isHome && "mix-blend-difference")} 
+            <Image
+              src={isHome ? logoWhite : logoBlack}
+              alt="INTU"
+              className={cn("h-[25px] w-auto", isHome && "mix-blend-difference")}
             />
           </Link>
         </div>
 
         {/* Right: Actions */}
-        <div className="flex-1 flex justify-end items-center gap-6 pointer-events-auto">
-          <button 
+        <div className="flex-1 flex justify-end items-center gap-6 md:gap-8 lg:gap-[40px] pointer-events-auto">
+          <button
             className={cn(
               "hover:opacity-70 transition-opacity relative",
               isHome && "mix-blend-difference"
-            )} 
+            )}
             aria-label="Shopping Bag"
             onClick={() => setIsCartOpen(true)}
           >
@@ -125,7 +125,7 @@ const NavbarDesktop = () => {
             )}
           </button>
           <div className="relative" ref={loginRef}>
-            <button 
+            <button
               className={cn(
                 "hover:opacity-70 transition-opacity block",
                 isHome && "mix-blend-difference"
@@ -137,7 +137,7 @@ const NavbarDesktop = () => {
             </button>
             {isLoginOpen && <LoginPopover onClose={() => setIsLoginOpen(false)} />}
           </div>
-          
+
           <button className={cn(
             "hover:opacity-70 transition-opacity",
             isHome && "mix-blend-difference"
@@ -145,7 +145,7 @@ const NavbarDesktop = () => {
             <Search size={18} strokeWidth={1.5} />
           </button>
           <div className="relative" ref={menuRef}>
-            <button 
+            <button
               className={cn(
                 "hover:opacity-70 transition-opacity flex items-center gap-2",
                 isHome && "mix-blend-difference"
