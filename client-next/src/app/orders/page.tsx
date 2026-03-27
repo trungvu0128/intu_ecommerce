@@ -1,10 +1,14 @@
-import Orders from '@/components/screens/Orders';
+'use client';
 
-export const metadata = {
-  title: 'Đơn hàng của tôi | INTU∞',
-  description: 'Xem lịch sử đơn hàng và trạng thái giao hàng.',
-};
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import Orders from '@/components/screens/Orders';
+import MobileOrders from '@/components/mobile/screens/MobileOrders';
 
 export default function OrdersPage() {
-  return <Orders />;
+  return (
+    <DeviceSwitch
+      mobile={<MobileOrders />}
+      desktop={<Orders />}
+    />
+  );
 }

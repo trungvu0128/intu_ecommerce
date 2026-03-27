@@ -1,10 +1,14 @@
-import Account from '@/components/screens/Account';
+'use client';
 
-export const metadata = {
-  title: 'Tài khoản của bạn | Lotus Ecommerce',
-  description: 'Quản lý thông tin cá nhân và đơn hàng của bạn.',
-};
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import Account from '@/components/screens/Account';
+import MobileAccount from '@/components/mobile/screens/MobileAccount';
 
 export default function AccountPage() {
-  return <Account />;
+  return (
+    <DeviceSwitch
+      mobile={<MobileAccount />}
+      desktop={<Account />}
+    />
+  );
 }

@@ -1,10 +1,14 @@
-import Checkout from '@/components/screens/Checkout';
+'use client';
 
-export const metadata = {
-  title: 'INTU∞ | Checkout',
-  description: 'Complete your purchase securely.',
-};
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import Checkout from '@/components/screens/Checkout';
+import MobileCheckout from '@/components/mobile/screens/MobileCheckout';
 
 export default function CheckoutPage() {
-  return <Checkout />;
+  return (
+    <DeviceSwitch
+      mobile={<MobileCheckout />}
+      desktop={<Checkout />}
+    />
+  );
 }

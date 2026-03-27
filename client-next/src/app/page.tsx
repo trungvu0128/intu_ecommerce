@@ -1,10 +1,14 @@
-import Home from '@/components/screens/Home';
+'use client';
 
-export const metadata = {
-  title: 'INTU∞ | Home',
-  description: 'Discover the latest collection from INTU∞.',
-};
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import Home from '@/components/screens/Home';
+import MobileHome from '@/components/mobile/screens/MobileHome';
 
 export default function HomePage() {
-  return <Home />;
+  return (
+    <DeviceSwitch
+      mobile={<MobileHome />}
+      desktop={<Home />}
+    />
+  );
 }

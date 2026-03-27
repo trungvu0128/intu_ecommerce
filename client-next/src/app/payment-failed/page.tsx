@@ -1,15 +1,17 @@
-import PaymentFailed from '@/components/screens/PaymentFailed';
-import { Suspense } from 'react';
+'use client';
 
-export const metadata = {
-  title: 'INTU∞ | Payment Failed',
-  description: 'Payment failed.',
-};
+import { Suspense } from 'react';
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import PaymentFailed from '@/components/screens/PaymentFailed';
+import MobilePaymentFailed from '@/components/mobile/screens/MobilePaymentFailed';
 
 export default function PaymentFailedPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <PaymentFailed />
+      <DeviceSwitch
+        mobile={<MobilePaymentFailed />}
+        desktop={<PaymentFailed />}
+      />
     </Suspense>
   );
 }

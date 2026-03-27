@@ -1,15 +1,17 @@
-import Shop from '@/components/screens/Shop';
-import { Suspense } from 'react';
+'use client';
 
-export const metadata = {
-  title: 'INTU∞ | Shop',
-  description: 'Shop the latest collection from INTU∞.',
-};
+import { Suspense } from 'react';
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import Shop from '@/components/screens/Shop';
+import MobileShop from '@/components/mobile/screens/MobileShop';
 
 export default function ShopPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <Shop />
+      <DeviceSwitch
+        mobile={<MobileShop />}
+        desktop={<Shop />}
+      />
     </Suspense>
   );
 }
