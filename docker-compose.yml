@@ -13,7 +13,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./server/init_db.sql:/docker-entrypoint-initdb.d/init.sql
 
 #  redis:
 #    image: redis:7-alpine
@@ -53,18 +53,38 @@ services:
     container_name: lotus-api
     restart: always
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
+      # Database
       - ConnectionStrings__DefaultConnection=Host=db;Database=lotus_ecommerce;Username=postgres;Password=${DB_PASSWORD}
+      # JWT
+      - JwtSettings__Secret=${JWT_SECRET}
+      # Telegram notifications
+      - Telegram__BotToken=${TELEGRAM_BOT_TOKEN}
+      - Telegram__ChatId=${TELEGRAM_CHAT_ID}
+      # Google OAuth
+      - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      # Firebase Admin SDK
+      - Firebase__ProjectId=${FIREBASE_PROJECT_ID}
+      # Cloudflare R2 / S3
+      - S3__AccessKey=${S3_ACCESS_KEY}
+      - S3__SecretKey=${S3_SECRET_KEY}
+      - S3__Endpoint=${S3_ENDPOINT}
+      - S3__BucketName=${S3_BUCKET_NAME}
+      - S3__PublicUrl=${S3_PUBLIC_URL}
+      # SePay payment
+      - SePay__SecretKey=${SEPAY_SECRET_KEY}
+      - SePay__WebhookSecretKey=${SEPAY_WEBHOOK_SECRET_KEY}
+      - SePay__MerchantId=${SEPAY_MERCHANT_ID}
+      - SePay__Environment=${SEPAY_ENVIRONMENT}
 #      - Redis__ConnectionString=redis:6379
 #      - Meilisearch__Url=http://meili:7700
 #      - Meilisearch__ApiKey=${MEILI_MASTER_KEY}
-      - Telegram__BotToken=${TELEGRAM_BOT_TOKEN}
-      - Telegram__ChatId=${TELEGRAM_CHAT_ID}
-      - JwtSettings__Secret=${JWT_SECRET}
     ports:
       - "5000:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 #      - redis
 #      - meili
 
