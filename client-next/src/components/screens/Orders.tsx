@@ -223,7 +223,8 @@ const EmptyState = ({ filter }: { filter: FilterTab }) => (
 );
 
 const Orders = () => {
-  const { user, token } = useAuthStore();
+  const user = useAuthStore(s => s.user);
+  const token = useAuthStore(s => s.token);
   const router = useRouter();
 
   const [orders, setOrders] = useState<Order[]>([]);

@@ -3,7 +3,7 @@
 import { ShoppingBag, Search, User, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import LoginPopover from '@/components/auth/LoginPopover';
 import SearchPopover from '@/components/layout/SearchPopover';
 import CartDrawer from '@/components/layout/CartDrawer';
@@ -22,13 +22,12 @@ const Navbar = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const loginRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const isHome = pathname === '/';
-  const { getTotalItems } = useCartStore();
+  const totalItems = useCartStore(s => s.items.reduce((a, i) => a + i.quantity, 0));
 
   const [mounted, setMounted] = useState(false);
 
@@ -36,28 +35,25 @@ const Navbar = () => {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const controlNavbar = () => {
-      if (typeof window !== 'undefined') {
-        const currentScrollY = window.scrollY;
-        
-        // Show navbar if scrolling up or at the very top
-        if (currentScrollY < lastScrollY || currentScrollY < 50) {
-          setIsVisible(true);
-        } else if (currentScrollY > 100 && currentScrollY > lastScrollY) {
-          // Hide navbar only after scrolling down a bit (100px) and scrolling down
-          setIsVisible(false);
-        }
-        
-        setLastScrollY(currentScrollY);
-      }
-    };
+  const lastScrollYRef = useRef(0);
 
+  const controlNavbar = useCallback(() => {
+    const currentScrollY = window.scrollY;
+    const prev = lastScrollYRef.current;
+    
+    if (currentScrollY < prev || currentScrollY < 50) {
+      setIsVisible(true);
+    } else if (currentScrollY > 100 && currentScrollY > prev) {
+      setIsVisible(false);
+    }
+    
+    lastScrollYRef.current = currentScrollY;
+  }, []);
+
+  useEffect(() => {
     window.addEventListener('scroll', controlNavbar);
-    return () => {
-      window.removeEventListener('scroll', controlNavbar);
-    };
-  }, [lastScrollY]);
+    return () => window.removeEventListener('scroll', controlNavbar);
+  }, [controlNavbar]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -124,9 +120,9 @@ const Navbar = () => {
             onClick={() => setIsCartOpen(true)}
           >
             <ShoppingBag size={18} strokeWidth={1.5} />
-            {mounted && getTotalItems() > 0 && (
+            {mounted && totalItems > 0 && (
               <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center bg-red-500 text-white text-[8px] font-bold rounded-full px-1">
-                {getTotalItems()}
+                {totalItems}
               </span>
             )}
           </button>

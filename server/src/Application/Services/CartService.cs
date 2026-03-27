@@ -83,8 +83,9 @@ public class CartService : ICartService
             }
             else
             {
-                cart.Items.Add(new CartItem
+                await _cartItemRepository.AddAsync(new CartItem
                 {
+                    CartId = cart.Id,
                     ProductVariantId = variant.Id,
                     Quantity = itemRequest.Quantity
                 });

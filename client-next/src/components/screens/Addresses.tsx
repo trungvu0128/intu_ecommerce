@@ -14,7 +14,8 @@ import { Address } from '@/types';
 import { Loader2, Plus, Trash2, MapPin } from 'lucide-react';
 
 const Addresses = () => {
-  const { user, token } = useAuthStore();
+  const user = useAuthStore(s => s.user);
+  const token = useAuthStore(s => s.token);
   const router = useRouter();
   
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -39,7 +40,8 @@ const Addresses = () => {
       return;
     }
     fetchAddresses();
-  }, [user, token, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchAddresses = async () => {
     setIsLoading(true);

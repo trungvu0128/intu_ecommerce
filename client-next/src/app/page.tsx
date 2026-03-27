@@ -7,8 +7,8 @@ import MobileHome from '@/components/mobile/screens/MobileHome';
 export default function HomePage() {
   return (
     <DeviceSwitch
-      mobile={<MobileHome />}
-      desktop={<Home />}
+      mobile={() => <MobileHome />}
+      desktop={() => <Home />}
     />
   );
 }

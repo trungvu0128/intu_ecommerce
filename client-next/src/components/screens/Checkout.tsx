@@ -15,8 +15,10 @@ import { PaymentMethod } from "@/types";
 
 const Checkout = () => {
   const router = useRouter();
-  const { items, clearCart, getTotalPrice } = useCartStore();
-  const { user } = useAuthStore();
+  const items = useCartStore(s => s.items);
+  const clearCart = useCartStore(s => s.clearCart);
+  const getTotalPrice = useCartStore(s => s.getTotalPrice);
+  const user = useAuthStore(s => s.user);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");

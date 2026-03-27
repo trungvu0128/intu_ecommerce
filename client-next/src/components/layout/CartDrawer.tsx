@@ -13,7 +13,9 @@ interface CartDrawerProps {
 }
 
 const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
-  const { items, removeItem, getTotalPrice } = useCartStore();
+  const items = useCartStore(s => s.items);
+  const removeItem = useCartStore(s => s.removeItem);
+  const getTotalPrice = useCartStore(s => s.getTotalPrice);
   const drawerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 

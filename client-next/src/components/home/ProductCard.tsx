@@ -1,5 +1,7 @@
 'use client';
 
+import React from 'react';
+
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 import { Plus } from "lucide-react";
@@ -81,4 +83,4 @@ const ProductCard = ({ id, slug, image, image2, name, price, className, imageCon
   );
 };
 
-export default ProductCard;
+export default React.memo(ProductCard);

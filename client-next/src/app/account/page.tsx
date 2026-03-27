@@ -7,8 +7,8 @@ import MobileAccount from '@/components/mobile/screens/MobileAccount';
 export default function AccountPage() {
   return (
     <DeviceSwitch
-      mobile={<MobileAccount />}
-      desktop={<Account />}
+      mobile={() => <MobileAccount />}
+      desktop={() => <Account />}
     />
   );
 }

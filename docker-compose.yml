@@ -99,15 +99,9 @@ services:
         - NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=${NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID}
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     container_name: lotus-client
-    user: root
     restart: always
     ports:
       - "3000:3000"
-    volumes:
-      - ./client-next:/app
-      - /app/node_modules
-      - /app/.next
-    command: npm run dev
     environment:
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     depends_on:

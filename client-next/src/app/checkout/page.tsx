@@ -7,8 +7,8 @@ import MobileCheckout from '@/components/mobile/screens/MobileCheckout';
 export default function CheckoutPage() {
   return (
     <DeviceSwitch
-      mobile={<MobileCheckout />}
-      desktop={<Checkout />}
+      mobile={() => <MobileCheckout />}
+      desktop={() => <Checkout />}
     />
   );
 }

@@ -9,8 +9,8 @@ export default function CategoryPage({ params }: { params: Promise<{ slug: strin
   const { slug } = use(params);
   return (
     <DeviceSwitch
-      mobile={<MobileShop />}
-      desktop={<Category slug={slug} />}
+      mobile={() => <MobileShop />}
+      desktop={() => <Category slug={slug} />}
     />
   );
 }

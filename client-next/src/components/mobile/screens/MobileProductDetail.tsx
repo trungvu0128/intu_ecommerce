@@ -17,7 +17,7 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   const [selectedColor, setSelectedColor] = useState('');
   const [showDescription, setShowDescription] = useState(false);
   const [addedToast, setAddedToast] = useState(false);
-  const { addItem } = useCartStore();
+  const addItem = useCartStore(s => s.addItem);
   const router = useRouter();
 
   useEffect(() => {

@@ -7,8 +7,8 @@ import MobileOrders from '@/components/mobile/screens/MobileOrders';
 export default function OrdersPage() {
   return (
     <DeviceSwitch
-      mobile={<MobileOrders />}
-      desktop={<Orders />}
+      mobile={() => <MobileOrders />}
+      desktop={() => <Orders />}
     />
   );
 }

@@ -9,8 +9,8 @@ export default function ShopPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <DeviceSwitch
-        mobile={<MobileShop />}
-        desktop={<Shop />}
+        mobile={() => <MobileShop />}
+        desktop={() => <Shop />}
       />
     </Suspense>
   );

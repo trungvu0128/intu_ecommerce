@@ -11,7 +11,9 @@ import { UserService } from "@/lib/api";
 import AccountSidebar from "@/components/account/AccountSidebar";
 
 const Account = () => {
-  const { user, logout, updateUser } = useAuthStore();
+  const user = useAuthStore(s => s.user);
+  const logout = useAuthStore(s => s.logout);
+  const updateUser = useAuthStore(s => s.updateUser);
   const [isEditingDob, setIsEditingDob] = useState(false);
   const [dobInput, setDobInput] = useState(user?.dateOfBirth || "");
   const [isUpdating, setIsUpdating] = useState(false);
