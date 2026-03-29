@@ -10,7 +10,7 @@ const archivo = Archivo({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://intuoo.com'), // Adjust this to the real production URL
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'https://intuoo.trungvudev.xyz'), // Adjust this to the real production URL
   title: "INTU∞ | High Fashion E-commerce",
   description: "High Fashion E-commerce Store",
   icons: {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "INTU∞ | High Fashion E-commerce",
     description: "High Fashion E-commerce Store",
-    url: 'https://intuoo.com',
+    url: process.env.NEXT_PUBLIC_BASE_URL || 'https://intuoo.trungvudev.xyz',
     siteName: 'INTU∞',
     images: [
       {

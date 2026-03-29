@@ -5,9 +5,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/checkout', '/payment-success', '/payment-failed'],
+      disallow: [
+        '/checkout', 
+        '/payment-success', 
+        '/payment-failed',
+        '/account',
+        '/orders',
+        '/addresses'
+      ],
     },
     // Replace with actual production URL
-    sitemap: 'https://intuoo.com/sitemap.xml',
+    sitemap: 'https://intuoo.trungvudev.xyz/sitemap.xml',
   };
 }

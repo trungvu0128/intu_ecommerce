@@ -87,7 +87,7 @@ const AccountSidebar: React.FC<AccountSidebarProps> = ({ activeTab }) => {
             <Globe className="w-5 h-5 text-black" strokeWidth={1.5} />
             <span className="text-[14px] text-black">Website</span>
           </div>
-          <span className="text-[14px] text-black">https://www.intuoo.com/</span>
+          <span className="text-[14px] text-black">https://intuoo.trungvudev.xyz/</span>
         </div>
       </nav>
     </aside>
