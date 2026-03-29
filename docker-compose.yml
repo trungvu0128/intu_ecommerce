@@ -6,7 +6,7 @@ services:
     container_name: lotus-db
     restart: always
     environment:
-      POSTGRES_USER: postgres
+      POSTGRES_USER: lotus-admin
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: lotus_ecommerce
     ports:
