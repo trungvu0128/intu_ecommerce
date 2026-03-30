@@ -1,4 +1,5 @@
 import About from '@/components/screens/About';
+import { AboutPageSwitch } from '@/components/mobile/AboutPageSwitch';
 
 export const metadata = {
   title: 'INTU∞ | About Us',
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function AboutPage() {
-  return <About />;
+  return (
+    <AboutPageSwitch>
+      <About />
+    </AboutPageSwitch>
+  );
 }

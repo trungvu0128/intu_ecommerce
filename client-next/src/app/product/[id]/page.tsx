@@ -6,8 +6,11 @@ export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
   try {
-    const product = await ProductService.getById(id);
+    const product = isUuid
+      ? await ProductService.getById(id)
+      : await ProductService.getBySlug(id);
     if (!product) return { title: 'Product Not Found | INTU∞' };
     
     const imageUrl = product.images?.[0]?.url || '/og-image.jpg';
@@ -37,11 +40,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
-  // Prepare JSON-LD
+  const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
   let jsonLd = null;
   try {
-    const product = await ProductService.getById(id);
+    const product = isUuid
+      ? await ProductService.getById(id)
+      : await ProductService.getBySlug(id);
     if (product) {
       jsonLd = {
         '@context': 'https://schema.org',
