@@ -44,8 +44,8 @@ const FeaturedSection = ({ section }: { section: FeaturedSectionData }) => {
         </div>
       </div>
       
-      <div 
-        className={`grid gap-4 md:gap-6 grid-cols-2 ${
+      <div
+        className={`grid gap-4 md:gap-6 grid-cols-2 auto-rows-fr items-stretch ${
           section.gridColumns === 1 ? 'md:grid-cols-1' :
           section.gridColumns === 3 ? 'md:grid-cols-3' :
           section.gridColumns === 4 ? 'md:grid-cols-4' :
@@ -54,7 +54,7 @@ const FeaturedSection = ({ section }: { section: FeaturedSectionData }) => {
         }`}
       >
         {section.items.sort((a,b) => a.displayOrder - b.displayOrder).map((item) => (
-          <Link href={item.linkUrl || `/product/${item.productSlug || item.productId}`} key={item.id} className="group relative block overflow-hidden bg-gray-50 aspect-[3/4]">
+          <Link href={item.linkUrl || `/product/${item.productSlug || item.productId}`} key={item.id} className="group relative block overflow-hidden bg-gray-50 aspect-[3/4] h-full">
             {(item.imageUrl || item.productImage) && (
              <img 
                src={item.imageUrl || item.productImage || ''} 
