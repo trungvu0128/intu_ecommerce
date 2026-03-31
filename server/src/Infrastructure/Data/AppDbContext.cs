@@ -147,10 +147,14 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .Property(c => c.MaxDiscountAmount)
             .HasPrecision(18, 2);
 
-        // Order configurations
+        // Order Order configurations
         modelBuilder.Entity<Order>()
             .HasIndex(o => o.OrderNumber)
             .IsUnique();
+
+        modelBuilder.Entity<Order>()
+            .Property(o => o.UserId)
+            .IsRequired(false);
 
         modelBuilder.Entity<Order>()
             .Property(o => o.TotalAmount)

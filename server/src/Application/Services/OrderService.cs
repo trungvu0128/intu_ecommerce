@@ -128,22 +128,22 @@ public class OrderService : IOrderService
 				}
 			}
 			decimal shippingCost = ((!(subTotal > 1000000m)) ? 45000 : 0);
-			decimal totalAmount = subTotal + shippingCost - discountAmount;
-			Order order = new Order
-			{
-				UserId = (userId ?? Guid.Empty),
-				OrderNumber = GenerateOrderNumber(),
-				Status = OrderStatus.Pending,
-				SubTotal = subTotal,
-				ShippingCost = shippingCost,
-				DiscountAmount = discountAmount,
-				CouponCode = checkoutDto.CouponCode,
-				TotalAmount = totalAmount,
-				ShippingAddress = addressSnapshot,
-				PaymentMethod = checkoutDto.PaymentMethod,
-				PaymentStatus = PaymentStatus.Pending,
-				Items = orderItems
-			};
+		decimal totalAmount = subTotal + shippingCost - discountAmount;
+		Order order = new Order
+		{
+			UserId = userId,
+			OrderNumber = GenerateOrderNumber(),
+			Status = OrderStatus.Pending,
+			SubTotal = subTotal,
+			ShippingCost = shippingCost,
+			DiscountAmount = discountAmount,
+			CouponCode = checkoutDto.CouponCode,
+			TotalAmount = totalAmount,
+			ShippingAddress = addressSnapshot,
+			PaymentMethod = checkoutDto.PaymentMethod,
+			PaymentStatus = PaymentStatus.Pending,
+			Items = orderItems
+		};
 			await _orderRepository.AddAsync(order);
 			foreach (CheckoutItemDto item2 in items)
 			{

@@ -92,7 +92,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
         ) : (
           <>
             {/* Items — horizontal scroll */}
-            <div className="px-6 md:px-12 pt-10 pb-12 overflow-x-auto cart-scrollbar">
+            <div className="px-6 md:px-8 pt-10 md:pt-12 pb-12 overflow-x-auto cart-scrollbar">
               <div className="flex gap-12 md:gap-16">
                 {items.map((item) => (
                   <div key={item.id} className="flex gap-4 md:gap-6 shrink-0 min-w-[280px] md:min-w-[400px] max-w-[500px]">
@@ -143,7 +143,7 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
             </div>
 
             {/* Bottom Bar */}
-            <div className="px-4 md:px-12 py-6 md:py-8 bg-white border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-4 pb-safe md:pb-8">
+            <div className="px-6 md:px-8 py-6 md:py-8 bg-white border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-4 pb-safe md:pb-8">
               <span className="text-[18px] md:text-[20px] font-normal tracking-[0.02em] uppercase text-black">
                 SUBTOTAL: {formatPrice(getTotalPrice())}
               </span>

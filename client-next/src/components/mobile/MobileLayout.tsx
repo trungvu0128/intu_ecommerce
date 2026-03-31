@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import CartDrawer from '@/components/layout/CartDrawer';
+import MobileCartDrawer from '@/components/layout/MobileCartDrawer';
 import MobileFooter from '@/components/mobile/MobileFooter';
 import logoBlack from '@/assets/LOGO_black.png';
 import logoWhite from '@/assets/LOGO_white.png';
@@ -34,22 +35,10 @@ function MenuDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
         pointerEvents: isOpen ? 'auto' : 'none',
       }}
     >
-      {/* Overlay */}
-      <div
-        onClick={onClose}
-        style={{
-          position: 'absolute', inset: 0,
-          background: 'rgba(0,0,0,0.4)',
-          opacity: isOpen ? 1 : 0,
-          transition: 'opacity 0.3s ease',
-        }}
-      />
-
       {/* Panel — slides in from right */}
       <div
         style={{
-          position: 'absolute', top: 0, right: 0, bottom: 0,
-          width: '80%', maxWidth: 320,
+          position: 'absolute', inset: 0,
           background: '#fff',
           display: 'flex', flexDirection: 'column',
           transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
@@ -59,54 +48,86 @@ function MenuDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
         {/* Header */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '0 20px', height: 56, borderBottom: '1px solid #eaeaea', flexShrink: 0,
+          padding: '16px 20px', borderBottom: '1px solid #f5f5f5', flexShrink: 0,
         }}>
-          <span style={{ fontSize: 11, fontWeight: 500, letterSpacing: '0.15em' }}>MENU</span>
+          <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: '0.1em' }}>MENU</span>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 4 }}
+            style={{ 
+              background: '#f5f5f5', 
+              border: 'none', 
+              borderRadius: '50%',
+              cursor: 'pointer', 
+              display: 'flex', 
+              padding: 8,
+              width: 40,
+              height: 40,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
             aria-label="Close menu"
           >
-            <X size={20} strokeWidth={1} />
+            <X size={20} strokeWidth={2} />
           </button>
         </div>
 
         {/* Nav Links */}
-        <nav style={{ flex: 1, padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {NAV_LINKS.map(link => (
+        <nav style={{ flex: 1, padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {NAV_LINKS.map((link, index) => (
             <Link
-              key={link.href}
-              href={link.href}
-              onClick={onClose}
-              style={{
-                display: 'block',
-                fontSize: 15,
-                fontWeight: 400,
-                letterSpacing: '0.15em',
+                key={link.href}
+                href={link.href}
+                onClick={onClose}
+                style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: 16,
+                fontWeight: 500,
+                letterSpacing: '0.05em',
                 color: '#000',
                 textDecoration: 'none',
-                padding: '16px 0',
-                borderBottom: '1px solid #f8f8f8',
+                padding: '20px 0',
+                borderBottom: index !== NAV_LINKS.length - 1 ? '1px solid #f5f5f5' : 'none',
               }}
             >
-              {link.label}
+              <span>{link.label}</span>
+              <span style={{ fontSize: 18, color: '#999' }}>→</span>
             </Link>
           ))}
         </nav>
 
         {/* Footer links */}
-        <div style={{ padding: '24px 28px 40px', borderTop: '1px solid #eaeaea' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ padding: '24px 20px 40px', borderTop: '1px solid #f5f5f5' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <Link href="/account" onClick={onClose}
-              style={{ fontSize: 10, color: '#888', letterSpacing: '0.15em', textDecoration: 'none' }}>
-              MY ACCOUNT
+              style={{ 
+                fontSize: 14, 
+                color: '#666', 
+                letterSpacing: '0.05em', 
+                textDecoration: 'none',
+                fontWeight: 500
+              }}>
+              My Account
             </Link>
             <Link href="/orders" onClick={onClose}
-              style={{ fontSize: 10, color: '#888', letterSpacing: '0.15em', textDecoration: 'none' }}>
-              MY ORDERS
+              style={{ 
+                fontSize: 14, 
+                color: '#666', 
+                letterSpacing: '0.05em', 
+                textDecoration: 'none',
+                fontWeight: 500
+              }}>
+              My Orders
             </Link>
             <a href="mailto:intuoo@gmail.com"
-              style={{ fontSize: 10, color: '#888', letterSpacing: '0.15em', textDecoration: 'none' }}>
+              style={{ 
+                fontSize: 14, 
+                color: '#666', 
+                letterSpacing: '0.05em', 
+                textDecoration: 'none',
+                fontWeight: 500
+              }}>
               intuoo@gmail.com
             </a>
           </div>
@@ -218,7 +239,7 @@ export default function MobileLayout({
         {children}
       </main>
       {showFooter && <MobileFooter />}
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      <MobileCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       <MenuDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </div>
   );

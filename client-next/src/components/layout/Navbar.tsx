@@ -7,7 +7,9 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import LoginPopover from '@/components/auth/LoginPopover';
 import SearchPopover from '@/components/layout/SearchPopover';
 import CartDrawer from '@/components/layout/CartDrawer';
+import MobileCartDrawer from '@/components/layout/MobileCartDrawer';
 import { useCartStore } from '@/store/useCartStore';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -30,6 +32,7 @@ const Navbar = () => {
   const totalItems = useCartStore(s => s.items.reduce((a, i) => a + i.quantity, 0));
 
   const [mounted, setMounted] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   useEffect(() => {
     setMounted(true);
@@ -169,7 +172,11 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      {isMobile ? (
+        <MobileCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      ) : (
+        <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+      )}
     </>
   );
 };

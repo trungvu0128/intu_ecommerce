@@ -63,7 +63,7 @@ public class AdminDashboardController : BaseApiController
         {
             Id = o.Id,
             OrderNumber = o.OrderNumber,
-            CustomerName = userNames.TryGetValue(o.UserId, out var name) ? name : null,
+            CustomerName = o.UserId.HasValue && userNames.TryGetValue(o.UserId.Value, out var name) ? name : null,
             TotalAmount = o.TotalAmount,
             Status = o.Status.ToString(),
             CreatedAt = o.CreatedAt,

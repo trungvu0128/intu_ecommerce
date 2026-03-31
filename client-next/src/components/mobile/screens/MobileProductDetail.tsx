@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Share2, Heart, Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import MobileLayout from '@/components/mobile/MobileLayout';
 import { ProductService } from '@/lib/api';
 import { useCartStore } from '@/store/useCartStore';
 import type { Product, ProductVariant } from '@/types';
+import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 export default function MobileProductDetail({ slug }: { slug: string }) {
   const [product, setProduct] = useState<Product | null>(null);
@@ -17,6 +19,9 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   const [selectedColor, setSelectedColor] = useState('');
   const [activeTab, setActiveTab] = useState('DETAILS');
   const [addedToast, setAddedToast] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [showShareSheet, setShowShareSheet] = useState(false);
   
   const addItem = useCartStore(s => s.addItem);
   const router = useRouter();
@@ -24,7 +29,6 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        // Match the same logic as desktop ProductDetail — UUID → getById, else → getBySlug
         const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(slug);
         const data = isUuid
           ? await ProductService.getById(slug)
@@ -47,10 +51,11 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   if (isLoading) {
     return (
       <MobileLayout>
-        <div style={{ padding: 16 }}>
-          <div className="mobile-skeleton" style={{ aspectRatio: '3/4', width: '100%', marginBottom: 16 }} />
-          <div className="mobile-skeleton" style={{ height: 20, width: '100%', marginBottom: 8 }} />
-          <div className="mobile-skeleton" style={{ height: 20, width: '100%' }} />
+        <div className="p-4 space-y-4">
+          <div className="aspect-[3/4] w-full bg-zinc-100 rounded-2xl animate-pulse" />
+          <div className="h-6 bg-zinc-100 rounded animate-pulse" />
+          <div className="h-4 w-3/4 bg-zinc-100 rounded animate-pulse" />
+          <div className="h-12 bg-zinc-100 rounded-xl animate-pulse" />
         </div>
       </MobileLayout>
     );
@@ -59,9 +64,15 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   if (!product) {
     return (
       <MobileLayout>
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <h3 style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#999' }}>Product not found</h3>
-          <Link href="/shop" style={{ display: 'inline-block', marginTop: 24, padding: '12px 32px', backgroundColor: '#000', color: '#fff', fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textDecoration: 'none' }}>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-8 text-center">
+          <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mb-4">
+            <X size={24} className="text-zinc-400" />
+          </div>
+          <h3 className="text-sm font-medium text-zinc-500 mb-2">Product not found</h3>
+          <Link 
+            href="/shop"
+            className="px-6 py-3 bg-black text-white text-xs font-semibold tracking-wider rounded-xl"
+          >
             BACK TO SHOP
           </Link>
         </div>
@@ -92,11 +103,17 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
       image: images[0] || '',
       slug: product.slug,
       productId: product.id,
+      quantity,
       skipCartOpen: true,
     });
     
     setAddedToast(true);
     setTimeout(() => setAddedToast(false), 2000);
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    router.push('/checkout');
   };
 
   const getButtonText = () => {
@@ -108,171 +125,274 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
 
   const isButtonDisabled = (!selectedSize && sizes.length > 0) || (!selectedColor && colors.length > 0) || !inStock;
 
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN').format(price);
+  };
+
   return (
     <MobileLayout>
-      {/* Minimal Header Line */}
-      <div style={{ borderBottom: '1px solid #eaeaea', height: 1 }} />
+      <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex-1 pb-32">
+          <div className="relative">
+            <div className="relative aspect-[3/4] w-full overflow-hidden bg-zinc-50">
+              {images[currentImage] ? (
+                <Image
+                  src={images[currentImage]}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="100vw"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-zinc-400 text-xs tracking-wider">
+                  NO IMAGE
+                </div>
+              )}
 
-      {/* Image Gallery */}
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', overflow: 'hidden', background: '#f8f8f8' }}>
-        {images[currentImage] ? (
-          <img src={images[currentImage]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        ) : (
-          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: 11, letterSpacing: '0.05em' }}>NO IMAGE</div>
-        )}
-      </div>
-      
-      {/* Gallery Dots Minimal */}
-      {images.length > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 6, margin: '16px 0' }}>
-          {images.map((_, i) => (
-            <button 
-              key={i} 
-              onClick={() => setCurrentImage(i)}
-              style={{
-                width: 6, height: 6, borderRadius: '50%', padding: 0,
-                border: 'none', backgroundColor: i === currentImage ? '#000' : '#d4d4d4', transition: 'background-color 0.2s', cursor: 'pointer'
-              }} 
-            />
-          ))}
-        </div>
-      )}
+              <button
+                onClick={() => router.back()}
+                className="absolute top-4 left-4 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg z-10 active:scale-95 transition-transform"
+              >
+                <ChevronLeft size={20} strokeWidth={2} />
+              </button>
 
-      {/* Product Info (Centered & Minimal) */}
-      <div style={{ padding: '16px 20px 0', textAlign: 'center' }}>
-        <h1 style={{ fontSize: 13, fontWeight: 300, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.4 }}>
-          {product.name}
-        </h1>
-        <p style={{ fontSize: 12, fontWeight: 500, margin: '8px 0 0', letterSpacing: '0.05em' }}>
-          {new Intl.NumberFormat('vi-VN').format(price)}₫
-        </p>
-      </div>
-
-      <div style={{ padding: '32px 20px 0' }}>
-        {/* Color Selector */}
-        {colors.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 500, margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-              COLOR: <span style={{ color: '#666' }}>{selectedColor || 'SELECT'}</span>
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-              {colors.map(color => (
+              <div className="absolute top-4 right-4 flex gap-2 z-10">
                 <button
-                  key={color}
-                  onClick={() => setSelectedColor(color)}
-                  style={{
-                    padding: '8px 16px', fontSize: 11, fontWeight: 500, letterSpacing: '0.05em',
-                    backgroundColor: selectedColor === color ? '#000' : '#fff',
-                    color: selectedColor === color ? '#fff' : '#000',
-                    border: '1px solid #000', transition: 'all 0.2s', cursor: 'pointer'
-                  }}
+                  onClick={() => setIsLiked(!isLiked)}
+                  className={cn(
+                    "w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform",
+                    isLiked && "bg-red-50"
+                  )}
                 >
-                  {color}
+                  <Heart 
+                    size={18} 
+                    strokeWidth={2} 
+                    className={cn(isLiked ? "fill-red-500 text-red-500" : "text-zinc-600")}
+                  />
                 </button>
-              ))}
+                <button
+                  onClick={() => setShowShareSheet(true)}
+                  className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                >
+                  <Share2 size={18} strokeWidth={2} className="text-zinc-600" />
+                </button>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Size Selector */}
-        {sizes.length > 0 && (
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 500, margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.05em', textAlign: 'center' }}>
-              SIZE: <span style={{ color: '#666' }}>{selectedSize || 'SELECT'}</span>
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center' }}>
-              {sizes.map(size => {
-                const available = product.variants?.some(v => v.size === size && v.color === selectedColor && v.stockQuantity > 0);
-                return (
+            {images.length > 1 && (
+              <div className="flex justify-center gap-2 py-4 px-4 overflow-x-auto">
+                {images.map((img, i) => (
                   <button
-                    key={size}
-                    onClick={() => available && setSelectedSize(size)}
-                    style={{
-                      padding: '8px 16px', fontSize: 11, fontWeight: 500, letterSpacing: '0.05em',
-                      backgroundColor: selectedSize === size ? '#000' : '#fff',
-                      color: selectedSize === size ? '#fff' : available ? '#000' : '#ccc',
-                      border: `1px solid ${available ? '#000' : '#eaeaea'}`,
-                      opacity: available ? 1 : 0.5,
-                      textDecoration: available ? 'none' : 'line-through',
-                      cursor: available ? 'pointer' : 'not-allowed',
-                      transition: 'all 0.2s'
-                    }}
+                    key={i}
+                    onClick={() => setCurrentImage(i)}
+                    className={cn(
+                      "flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all",
+                      i === currentImage ? "border-black scale-105" : "border-transparent opacity-60"
+                    )}
                   >
-                    {size}
+                    <Image
+                      src={img}
+                      alt={`${product.name} ${i + 1}`}
+                      fill
+                      className="object-cover"
+                      sizes="64px"
+                    />
                   </button>
-                );
-              })}
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="px-5 py-6 space-y-6">
+            <div>
+              <h1 className="text-base font-medium text-black leading-snug mb-2">
+                {product.name}
+              </h1>
+              <p className="text-lg font-semibold text-black">
+                {formatPrice(price)}₫
+              </p>
+            </div>
+
+            {colors.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">
+                  Color: <span className="text-black">{selectedColor || 'Select'}</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {colors.map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className={cn(
+                        "px-4 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all",
+                        selectedColor === color 
+                          ? "bg-black text-white" 
+                          : "bg-zinc-100 text-black hover:bg-zinc-200"
+                      )}
+                    >
+                      {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {sizes.length > 0 && (
+              <div>
+                <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">
+                  Size: <span className="text-black">{selectedSize || 'Select'}</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map(size => {
+                    const available = product.variants?.some(
+                      v => v.size === size && v.color === selectedColor && v.stockQuantity > 0
+                    );
+                    return (
+                      <button
+                        key={size}
+                        onClick={() => available && setSelectedSize(size)}
+                        disabled={!available}
+                        className={cn(
+                          "w-12 h-12 rounded-lg text-sm font-medium tracking-wide transition-all",
+                          selectedSize === size 
+                            ? "bg-black text-white" 
+                            : available 
+                              ? "bg-zinc-100 text-black hover:bg-zinc-200" 
+                              : "bg-zinc-50 text-zinc-400 line-through cursor-not-allowed"
+                        )}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">
+                Quantity
+              </p>
+              <div className="flex items-center gap-3 bg-zinc-50 rounded-xl p-1 w-fit">
+                <button
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-white hover:bg-zinc-100 transition-colors active:scale-95"
+                >
+                  <Minus size={16} strokeWidth={2} />
+                </button>
+                <span className="w-12 text-center text-sm font-semibold">
+                  {quantity}
+                </span>
+                <button
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="w-10 h-10 flex items-center justify-center rounded-lg bg-white hover:bg-zinc-100 transition-colors active:scale-95"
+                >
+                  <Plus size={16} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+
+            <div className="border-t border-zinc-100">
+              <div className="flex border-b border-zinc-100">
+                {['DETAILS', 'SIZING', 'SHIPPING'].map(tab => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={cn(
+                      "flex-1 py-4 text-xs font-medium tracking-wide transition-colors",
+                      activeTab === tab 
+                        ? "text-black border-b-2 border-black" 
+                        : "text-zinc-400 hover:text-zinc-600"
+                    )}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+              <div className="py-5 text-sm text-zinc-600 leading-relaxed">
+                {activeTab === 'DETAILS' && (
+                  <div dangerouslySetInnerHTML={{ __html: product.description || 'No description available.' }} />
+                )}
+                {activeTab === 'SIZING' && (
+                  <div className="text-center space-y-3">
+                    <p>Standard Fanci Club measurements apply.</p>
+                    <Link href="/size-guide" className="text-black underline font-medium">
+                      View Size Guide
+                    </Link>
+                  </div>
+                )}
+                {activeTab === 'SHIPPING' && (
+                  <div className="text-center space-y-2">
+                    <p>Worldwide shipping available.</p>
+                    <p>Standard delivery: 3-5 business days.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 px-4 py-4 pb-safe z-50 shadow-lg">
+          <div className="flex gap-3">
+            <button
+              onClick={handleAddToCart}
+              disabled={isButtonDisabled}
+              className={cn(
+                "flex-1 py-4 px-6 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all active:scale-[0.98]",
+                isButtonDisabled 
+                  ? "bg-zinc-100 text-zinc-400 cursor-not-allowed" 
+                  : "bg-zinc-100 text-black hover:bg-zinc-200"
+              )}
+            >
+              Add to Bag
+            </button>
+            <button
+              onClick={handleBuyNow}
+              disabled={isButtonDisabled}
+              className={cn(
+                "flex-1 py-4 px-6 rounded-xl text-xs font-semibold tracking-wider uppercase transition-all active:scale-[0.98]",
+                isButtonDisabled 
+                  ? "bg-zinc-100 text-zinc-400 cursor-not-allowed" 
+                  : "bg-black text-white hover:bg-zinc-800"
+              )}
+            >
+              Buy Now
+            </button>
+          </div>
+        </div>
+
+        {addedToast && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-3 rounded-xl text-xs font-semibold tracking-wider shadow-xl z-[100] animate-fade-in-up">
+            Added to Bag
+          </div>
+        )}
+
+        {showShareSheet && (
+          <div className="fixed inset-0 bg-black/50 z-[200] flex items-end justify-center" onClick={() => setShowShareSheet(false)}>
+            <div className="bg-white w-full max-w-md rounded-t-3xl p-6 pb-safe animate-slide-up" onClick={e => e.stopPropagation()}>
+              <div className="w-12 h-1 bg-zinc-300 rounded-full mx-auto mb-6" />
+              <h3 className="text-sm font-semibold mb-4 text-center">Share Product</h3>
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label: 'Copy Link', icon: '🔗' },
+                  { label: 'Facebook', icon: '📘' },
+                  { label: 'Instagram', icon: '📷' },
+                  { label: 'WhatsApp', icon: '💬' },
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-zinc-50 transition-colors"
+                  >
+                    <span className="text-2xl">{item.icon}</span>
+                    <span className="text-[10px] font-medium text-zinc-600">{item.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* Tabs Vô Cực */}
-      <div style={{ margin: '40px 0 20px', borderTop: '1px solid #eaeaea' }}>
-        <div style={{ display: 'flex', borderBottom: '1px solid #eaeaea' }}>
-          {['DETAILS', 'SIZING', 'SHIPPING'].map(tab => (
-            <button 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1, padding: '16px 0', background: 'none', border: 'none', 
-                fontSize: 11, fontWeight: activeTab === tab ? 600 : 400, 
-                letterSpacing: '0.05em', borderBottom: activeTab === tab ? '1px solid #000' : 'none',
-                marginBottom: -1, cursor: 'pointer', transition: 'all 0.2s', color: activeTab === tab ? '#000' : '#888'
-              }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <div style={{ padding: '24px 20px', fontSize: 12, lineHeight: 1.6, color: '#444' }}>
-          {activeTab === 'DETAILS' && (
-             <div dangerouslySetInnerHTML={{ __html: product.description || 'No description available for this item.' }} />
-          )}
-          {activeTab === 'SIZING' && (
-             <div style={{ textAlign: 'center' }}>
-               <p style={{ margin: '0 0 12px' }}>Standard Fanci Club measurements apply.</p>
-               <Link href="/size-guide" style={{ color: '#000', textDecoration: 'underline' }}>View Size Guide</Link>
-             </div>
-          )}
-          {activeTab === 'SHIPPING' && (
-             <div style={{ textAlign: 'center' }}>
-               <p style={{ margin: '0 0 12px' }}>Worldwide shipping available.</p>
-               <p style={{ margin: 0 }}>Standard delivery: 3-5 business days.</p>
-             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Sticky Bottom Actions */}
-      <div style={{ borderTop: '1px solid #eaeaea', padding: '16px 20px', backgroundColor: '#fff', position: 'sticky', bottom: 0, left: 0, right: 0, zIndex: 40 }}>
-        <button
-          onClick={handleAddToCart}
-          disabled={isButtonDisabled}
-          style={{ 
-            width: '100%', padding: '16px 0', fontSize: 12, fontWeight: 600, letterSpacing: '0.05em',
-            backgroundColor: isButtonDisabled ? '#f5f5f5' : '#000',
-            color: isButtonDisabled ? '#999' : '#fff',
-            border: isButtonDisabled ? '1px solid #eaeaea' : 'none',
-            cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-            transition: 'background-color 0.2s'
-          }}
-        >
-          {getButtonText()}
-        </button>
-      </div>
-
-      {/* Toast */}
-      {addedToast && (
-        <div style={{
-          position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
-          backgroundColor: '#000', color: '#fff', padding: '12px 24px', fontSize: 11,
-          fontWeight: 600, letterSpacing: '0.05em', zIndex: 100, boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-        }}>
-          ADDED TO BAG
-        </div>
-      )}
-
     </MobileLayout>
   );
 }

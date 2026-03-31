@@ -130,7 +130,43 @@ export default function MobileOrders() {
                     </div>
                     {order.shippingAddress && (
                       <div style={{ fontSize: 12, color: '#999', marginTop: 8, padding: '8px 0', borderTop: '1px solid #f0f0f0' }}>
-                        📦 {order.shippingAddress}
+                        📦 {(() => {
+                          try {
+                            const address = typeof order.shippingAddress === 'string' 
+                              ? JSON.parse(order.shippingAddress) 
+                              : order.shippingAddress;
+                            if (typeof address === 'object') {
+                              const parts = [];
+                              if (address.RecipientName || address.receiverName) {
+                                parts.push(address.RecipientName || address.receiverName);
+                              }
+                              if (address.PhoneNumber || address.phone) {
+                                parts.push(address.PhoneNumber || address.phone);
+                              }
+                              const street = address.Address || address.address || address.Street || address.street;
+                              const city = address.City || address.city;
+                              const state = address.State || address.state;
+                              const zipCode = address.ZipCode || address.zipCode;
+                              const country = address.Country || address.country;
+                              
+                              const locationParts = [];
+                              if (street) locationParts.push(street);
+                              if (city) locationParts.push(city);
+                              if (state) locationParts.push(state);
+                              if (zipCode) locationParts.push(zipCode);
+                              if (country) locationParts.push(country);
+                              
+                              if (locationParts.length > 0) {
+                                parts.push(locationParts.join(', '));
+                              }
+                              
+                              return parts.join(' - ');
+                            }
+                            return address;
+                          } catch (error) {
+                            return order.shippingAddress;
+                          }
+                        })()}
                       </div>
                     )}
                   </div>

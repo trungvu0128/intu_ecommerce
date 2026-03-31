@@ -2,7 +2,7 @@ namespace LotusEcommerce.Domain.Enums;
 
 public enum PaymentMethod
 {
+    COD,
     CreditCard,
-    PayPal,
-    COD
+    BankTransfer
 }
