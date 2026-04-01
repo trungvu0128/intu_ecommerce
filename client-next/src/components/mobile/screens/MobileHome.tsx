@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import MobileLayout from '@/components/mobile/MobileLayout';
 import Hero from '@/components/home/Hero';
 import FeaturedSection from '@/components/home/FeaturedSection';
@@ -85,16 +84,9 @@ export default function MobileHome() {
                       href={`/product/${product.slug || product.id}`}
                       style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
                     >
-                      <div style={{ width: '100%', aspectRatio: '3/4', backgroundColor: '#f8f8f8', overflow: 'hidden', marginBottom: 10, position: 'relative' }}>
+                      <div style={{ width: '100%', aspectRatio: '3/4', backgroundColor: '#f8f8f8', overflow: 'hidden', marginBottom: 10 }}>
                         {product.image ? (
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            sizes="50vw"
-                            style={{ objectFit: 'cover' }}
-                            loading="lazy"
-                          />
+                          <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
                         ) : (
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: '#ccc' }}>NO IMAGE</div>
                         )}

@@ -19,11 +19,9 @@ const Footer = () => {
             
             {/* Vietnamese Ministry of Industry and Trade Badge */}
             <a href="http://online.gov.vn/Home/WebDetails/112662" target="_blank" rel="noopener noreferrer" className="w-32 block">
-              <Image 
+              <img 
                 src="https://dangkywebvoibocongthuong.com/wp-content/uploads/2021/11/logo-da-thong-bao-bo-cong-thuong.png" 
                 alt="Registered with Vietnam Ministry of Industry and Trade" 
-                width={128}
-                height={48}
                 className="w-full h-auto"
                 loading="lazy"
               />

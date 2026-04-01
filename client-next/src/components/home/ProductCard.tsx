@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCartStore";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 interface ProductCardProps {
   id: string | number;
@@ -24,7 +23,7 @@ const ProductCard = ({ id, slug, image, image2, name, price, className, imageCon
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to detail page
+    e.preventDefault();
     e.stopPropagation();
     addItem({
       id: String(id),
@@ -44,13 +43,11 @@ const ProductCard = ({ id, slug, image, image2, name, price, className, imageCon
     >
       <div className={cn("relative w-full aspect-[3/4] overflow-hidden bg-[#F2F2F2]", imageContainerClassName)}>
         {/* Main Image */}
-        <Image
+        <img
           src={image}
           alt={name}
-          fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className={cn(
-            "object-cover transition-all duration-700 ease-in-out group-hover:scale-105",
+            "w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105",
             image2 && "group-hover:opacity-0"
           )}
           loading="lazy"
@@ -58,12 +55,10 @@ const ProductCard = ({ id, slug, image, image2, name, price, className, imageCon
         
         {/* Hover Image */}
         {image2 && (
-          <Image
+          <img
             src={image2}
             alt={`${name} secondary view`}
-            fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="absolute inset-0 object-cover opacity-0 group-hover:opacity-100 transition-all duration-700 ease-in-out scale-110 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-all duration-700 ease-in-out scale-110 group-hover:scale-105"
             loading="lazy"
           />
         )}
