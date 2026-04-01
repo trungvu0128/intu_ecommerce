@@ -13,6 +13,6 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    allowedHosts: ['intuoo.trungvudev.xyz', 'cms.trungvudev.xyz', '[IP_ADDRESS]', '[IP_ADDRESS]'],
+    allowedHosts: ['intuoo.com', 'cms.intuoo.com', '[IP_ADDRESS]', '[IP_ADDRESS]'],
   },
 })

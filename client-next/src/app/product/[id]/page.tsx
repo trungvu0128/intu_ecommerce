@@ -59,7 +59,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           price: product.basePrice,
           priceCurrency: 'VND',
           availability: 'https://schema.org/InStock',
-          url: `https://intuoo.trungvudev.xyz/product/${product.id}`,
+          url: `https://intuoo.com/product/${product.id}`,
         },
       };
     }

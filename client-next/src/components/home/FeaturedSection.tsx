@@ -54,7 +54,7 @@ const FeaturedSection = ({ section }: { section: FeaturedSectionData }) => {
         }`}
       >
         {section.items.sort((a,b) => a.displayOrder - b.displayOrder).map((item) => (
-          <Link href={item.linkUrl || `/product/${item.productSlug || item.productId}`} key={item.id} className="group relative block overflow-hidden bg-gray-50 aspect-[3/4] h-full">
+          <Link href={item.linkUrl || `/product/${item.productSlug || item.productId}`} key={item.id} className="group relative block overflow-hidden bg-gray-50 aspect-[3/4] rounded-lg">
             {(item.imageUrl || item.productImage) && (
              <img 
                src={item.imageUrl || item.productImage || ''} 

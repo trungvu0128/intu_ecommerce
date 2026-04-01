@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { ProductService } from '@/lib/api';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://intuoo.trungvudev.xyz'; // Replace with actual production URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://intuoo.com';
 
   let products: any[] = [];
   try {

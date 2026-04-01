@@ -77,7 +77,7 @@ export default function MobileHome() {
               }));
             return (
               <div key={section.id} style={{ padding: '12px 16px 24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px 12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px 12px' }}>
                   {catProducts.map((product, idx) => (
                     <Link
                       key={`${section.id}-${product.id}-${idx}`}

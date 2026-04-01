@@ -15,6 +15,6 @@ export default function robots(): MetadataRoute.Robots {
       ],
     },
     // Replace with actual production URL
-    sitemap: 'https://intuoo.trungvudev.xyz/sitemap.xml',
+    sitemap: 'https://intuoo.com/sitemap.xml',
   };
 }

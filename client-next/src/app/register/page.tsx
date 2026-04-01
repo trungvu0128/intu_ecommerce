@@ -1,4 +1,6 @@
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
 import Register from '@/components/screens/Register';
+import MobileRegister from '@/components/mobile/screens/MobileRegister';
 
 export const metadata = {
   title: 'INTU∞ | Register',
@@ -6,5 +8,10 @@ export const metadata = {
 };
 
 export default function RegisterPage() {
-  return <Register />;
+  return (
+    <DeviceSwitch
+      mobile={() => <MobileRegister />}
+      desktop={() => <Register />}
+    />
+  );
 }
