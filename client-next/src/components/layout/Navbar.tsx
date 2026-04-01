@@ -3,11 +3,7 @@
 import { ShoppingBag, Search, User, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import LoginPopover from '@/components/auth/LoginPopover';
-import SearchPopover from '@/components/layout/SearchPopover';
-import CartDrawer from '@/components/layout/CartDrawer';
-import MobileCartDrawer from '@/components/layout/MobileCartDrawer';
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useCartStore } from '@/store/useCartStore';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
@@ -16,7 +12,12 @@ import Image from 'next/image';
 import logoWhite from '@/assets/LOGO_white.png';
 import logoBlack from '@/assets/LOGO_black.png';
 
-import MenuDropdown from '@/components/layout/MenuDropdown';
+// Lazy-load heavy components that aren't needed at first paint
+const LoginPopover = lazy(() => import('@/components/auth/LoginPopover'));
+const SearchPopover = lazy(() => import('@/components/layout/SearchPopover'));
+const CartDrawer = lazy(() => import('@/components/layout/CartDrawer'));
+const MobileCartDrawer = lazy(() => import('@/components/layout/MobileCartDrawer'));
+const MenuDropdown = lazy(() => import('@/components/layout/MenuDropdown'));
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -54,7 +55,7 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    window.addEventListener('scroll', controlNavbar);
+    window.addEventListener('scroll', controlNavbar, { passive: true });
     return () => window.removeEventListener('scroll', controlNavbar);
   }, [controlNavbar]);
 
@@ -108,6 +109,7 @@ const Navbar = () => {
               src={isHome ? logoWhite : logoBlack} 
               alt="INTU" 
               className={cn("h-[25px] w-auto", isHome && "mix-blend-difference")} 
+              priority
             />
           </Link>
         </div>
@@ -140,7 +142,11 @@ const Navbar = () => {
             >
               <User size={18} strokeWidth={1.5} />
             </button>
-            {isLoginOpen && <LoginPopover onClose={() => setIsLoginOpen(false)} />}
+            {isLoginOpen && (
+              <Suspense fallback={null}>
+                <LoginPopover onClose={() => setIsLoginOpen(false)} />
+              </Suspense>
+            )}
           </div>
           
           <div className="relative" ref={searchRef}>
@@ -154,7 +160,11 @@ const Navbar = () => {
             >
               <Search size={18} strokeWidth={1.5} />
             </button>
-            {isSearchOpen && <SearchPopover onClose={() => setIsSearchOpen(false)} />}
+            {isSearchOpen && (
+              <Suspense fallback={null}>
+                <SearchPopover onClose={() => setIsSearchOpen(false)} />
+              </Suspense>
+            )}
           </div>
           <div className="relative" ref={menuRef}>
             <button 
@@ -168,15 +178,21 @@ const Navbar = () => {
               <Menu size={18} strokeWidth={1.5} />
               <span className="text-[10px] tracking-widest hidden md:inline-block">MENU</span>
             </button>
-            {isMenuOpen && <MenuDropdown />}
+            {isMenuOpen && (
+              <Suspense fallback={null}>
+                <MenuDropdown />
+              </Suspense>
+            )}
           </div>
         </div>
       </nav>
-      {isMobile ? (
-        <MobileCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      ) : (
-        <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
-      )}
+      <Suspense fallback={null}>
+        {isMobile ? (
+          <MobileCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        ) : (
+          <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        )}
+      </Suspense>
     </>
   );
 };

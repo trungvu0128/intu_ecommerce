@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import Image from "next/image";
 
 interface BannerProps {
   image: string;
@@ -12,10 +13,13 @@ interface BannerProps {
 const Banner = ({ image, title, className, aspectRatio = "aspect-[16/9]", link }: BannerProps) => {
   const content = (
     <>
-      <img
+      <Image
         src={image}
         alt={title}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+        fill
+        sizes="100vw"
+        className="object-cover transition-transform duration-700 group-hover:scale-105"
+        loading="lazy"
       />
       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300" />
       <div className="absolute bottom-12 left-0 w-full text-center text-white flex flex-col items-center">

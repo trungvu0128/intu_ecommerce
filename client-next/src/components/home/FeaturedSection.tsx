@@ -56,10 +56,13 @@ const FeaturedSection = ({ section }: { section: FeaturedSectionData }) => {
         {section.items.sort((a,b) => a.displayOrder - b.displayOrder).map((item) => (
           <Link href={item.linkUrl || `/product/${item.productSlug || item.productId}`} key={item.id} className="group relative block overflow-hidden bg-gray-50 aspect-[3/4] rounded-lg">
             {(item.imageUrl || item.productImage) && (
-             <img 
+             <Image 
                src={item.imageUrl || item.productImage || ''} 
                alt={item.productName} 
+               fill
+               sizes="(max-width: 768px) 50vw, 33vw"
                className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+               loading="lazy"
              />
             )}
             

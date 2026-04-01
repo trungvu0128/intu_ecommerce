@@ -1,24 +1,44 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 const Hero = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
+  useEffect(() => {
+    // Defer video loading until after first paint
+    const timer = setTimeout(() => {
+      setVideoLoaded(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (videoLoaded && videoRef.current) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [videoLoaded]);
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-zinc-900 text-white">
-      {/* Background Video */}
+      {/* Background Video — deferred loading */}
       <div className="absolute inset-0 z-0">
-        <video 
-          autoPlay 
-          muted 
-          loop 
-          playsInline
-          className="w-full h-full object-cover opacity-80"
-        >
-          <source src="/assets/test-bg.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-        {/* Overlay to ensure text readability if needed, though design asks for high contrast */}
+        {videoLoaded && (
+          <video
+            ref={videoRef}
+            muted
+            loop
+            playsInline
+            preload="none"
+            className="w-full h-full object-cover opacity-80"
+          >
+            <source src="/assets/test-bg.mp4" type="video/mp4" />
+          </video>
+        )}
+        {/* Overlay */}
         <div className="absolute inset-0 bg-black/20"></div>
       </div>
-
 
       {/* Bottom Content: Tagline */}
       <div className="absolute bottom-8 left-0 w-full z-10 flex flex-col items-center justify-center gap-1">
