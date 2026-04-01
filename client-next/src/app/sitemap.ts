@@ -6,15 +6,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let products: any[] = [];
   try {
-    // Fetch products to include them in the sitemap
     products = await ProductService.getAll({ pageSize: 1000 }) || [];
   } catch (error) {
     console.error('Failed to fetch products for sitemap:', error);
   }
 
   const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
-    url: `${baseUrl}/product/${product.id}`,
-    lastModified: new Date(),
+    url: `${baseUrl}/product/${product.slug || product.id}`,
+    lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
@@ -27,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/shop`,
+      url: `${baseUrl}/category/shop-all`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
@@ -36,19 +35,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${baseUrl}/about`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.8,
+      priority: 0.6,
     },
     {
-      url: `${baseUrl}/register`,
+      url: `${baseUrl}/campaign`,
       lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
+      changeFrequency: 'weekly',
+      priority: 0.7,
     },
     ...productEntries,
   ];

@@ -1,9 +1,14 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 
-export const metadata = {
-  title: 'INTU∞ | Recover Password',
-  description: 'Recover your password.',
+export const metadata: Metadata = {
+  title: 'Recover Password',
+  description: 'Reset your INTU∞ account password. Enter your email to receive a recovery link.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RecoverPage() {

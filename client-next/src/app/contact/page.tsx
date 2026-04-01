@@ -1,10 +1,32 @@
+import type { Metadata } from 'next';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ContactPageSwitch } from '@/components/mobile/ContactPageSwitch';
 
-export const metadata = {
-  title: 'INTU∞ | Contact',
-  description: 'Contact us.',
+export const metadata: Metadata = {
+  title: 'Contact Us – Get in Touch',
+  description: 'Have questions about your order or our collections? Contact the INTU∞ team via email or phone. We\'re here to help with sizing, shipping, and more.',
+  openGraph: {
+    title: 'Contact INTU∞ – Get in Touch',
+    description: 'Reach out to the INTU∞ team for support, inquiries, or collaborations.',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/contact',
+  },
+};
+
+const contactJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ContactPage',
+  name: 'Contact INTU∞',
+  description: 'Get in touch with the INTU∞ team for support, orders, and collaborations.',
+  mainEntity: {
+    '@type': 'Organization',
+    name: 'INTU∞',
+    email: 'intuoo@gmail.com',
+    telephone: '+84-931-202-22',
+  },
 };
 
 export default function ContactPage() {
@@ -23,6 +45,11 @@ export default function ContactPage() {
           </div>
         </main>
         <Footer />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
+        />
       </div>
     </ContactPageSwitch>
   );

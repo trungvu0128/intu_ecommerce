@@ -1,10 +1,11 @@
+import type { Metadata } from 'next';
 import ProductDetail from '@/components/screens/ProductDetail';
 import { ProductPageSwitch } from '@/components/mobile/ProductPageSwitch';
 import { ProductService } from '@/lib/api';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
   try {
@@ -14,26 +15,39 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     if (!product) return { title: 'Product Not Found | INTU∞' };
     
     const imageUrl = product.images?.[0]?.url || '/og-image.jpg';
+    const description = product.description?.substring(0, 160) || `Shop ${product.name} – premium streetwear from INTU∞. Free nationwide shipping.`;
+    const price = product.basePrice;
     
     return {
-      title: `${product.name} | INTU∞`,
-      description: product.description?.substring(0, 160) || 'View product details.',
+      title: product.name,
+      description,
       openGraph: {
         title: `${product.name} | INTU∞`,
-        description: product.description?.substring(0, 160) || 'View product details.',
-        images: [imageUrl],
+        description,
+        images: [
+          {
+            url: imageUrl,
+            width: 800,
+            height: 800,
+            alt: product.name,
+          },
+        ],
+        type: 'website',
       },
       twitter: {
         card: 'summary_large_image',
         title: `${product.name} | INTU∞`,
-        description: product.description?.substring(0, 160),
+        description,
         images: [imageUrl],
-      }
+      },
+      alternates: {
+        canonical: `/product/${product.slug || id}`,
+      },
     };
-  } catch (error) {
+  } catch {
     return {
-      title: `INTU∞ | Product ${id}`,
-      description: 'View product details.',
+      title: `Product | INTU∞`,
+      description: 'Explore premium streetwear products from INTU∞.',
     };
   }
 }
@@ -47,19 +61,28 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       ? await ProductService.getById(id)
       : await ProductService.getBySlug(id);
     if (product) {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://intuoo.com';
       jsonLd = {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.name,
-        image: product.images?.map(img => img.url) || [],
+        image: product.images?.map((img: any) => img.url) || [],
         description: product.description,
         sku: product.id,
+        brand: {
+          '@type': 'Brand',
+          name: 'INTU∞',
+        },
         offers: {
           '@type': 'Offer',
           price: product.basePrice,
           priceCurrency: 'VND',
           availability: 'https://schema.org/InStock',
-          url: `https://intuoo.com/product/${product.id}`,
+          url: `${baseUrl}/product/${product.slug || product.id}`,
+          seller: {
+            '@type': 'Organization',
+            name: 'INTU∞',
+          },
         },
       };
     }
@@ -73,7 +96,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <ProductDetail id={id} />
       </ProductPageSwitch>
       
-      {/* Inject Structured Data JSON-LD for Search Engines */}
+      {/* Product Structured Data for Rich Search Results */}
       {jsonLd && (
         <script
           type="application/ld+json"
