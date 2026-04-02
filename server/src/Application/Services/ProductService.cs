@@ -14,13 +14,17 @@ public class ProductService : IProductService
     private readonly IDistributedCache _cache;
     private readonly ISearchService _searchService;
     private const string FeaturedProductsKey = "featured_products";
-
-    public ProductService(IProductRepository repository, IDistributedCache cache, ISearchService searchService)
+    private readonly IProductImageRepository _productImageRepository;
+    private readonly IProductVariantRepository _productVariantRepository;
+    public ProductService(IProductRepository repository, IDistributedCache cache, ISearchService searchService, IProductImageRepository productImageRepository, IProductVariantRepository productVariantRepository)
     {
         _repository = repository;
         _cache = cache;
         _searchService = searchService;
+        _productImageRepository = productImageRepository;
+        _productVariantRepository = productVariantRepository;
     }
+
 
     public async Task<IEnumerable<ProductDto>> GetAllAsync(string? search = null, Guid? categoryId = null, bool? isFeatured = null, bool isAdmin = false)
     {
@@ -86,7 +90,8 @@ public class ProductService : IProductService
             }).ToList(),
             Images = dto.Images.Select(i => new ProductImage
             {
-                Url = i.Url,
+                Url = i.Url?.OriginalUrl ?? string.Empty,
+                ThumbnailUrl = i.Url?.ThumbnailUrl ?? string.Empty,
                 IsMain = i.IsMain
             }).ToList()
         };
@@ -94,10 +99,10 @@ public class ProductService : IProductService
         await _repository.AddAsync(product);
         await _repository.SaveChangesAsync();
 
-        if (product.IsFeatured) await _cache.RemoveAsync(FeaturedProductsKey);
+        //if (product.IsFeatured) await _cache.RemoveAsync(FeaturedProductsKey);
 
         // Sync to search index
-        await _searchService.IndexProductAsync(MapToSearchModel(product));
+        //await _searchService.IndexProductAsync(MapToSearchModel(product));
 
         return MapToDto(product);
     }
@@ -116,16 +121,71 @@ public class ProductService : IProductService
         product.BrandId = dto.BrandId;
         product.UpdatedAt = DateTime.UtcNow;
 
+        if (dto.Variants != null && dto.Variants.Any())
+        {
+            var existingVariantIds = dto.Variants.Where(v => v.Id != Guid.Empty).Select(v => v.Id).ToList();
+            var variantsToRemove = product.Variants.Where(v => !existingVariantIds.Contains(v.Id)).ToList();
+
+            foreach (var variant in variantsToRemove)
+            {
+                product.Variants.Remove(variant);
+            }
+
+            foreach (var variantDto in dto.Variants)
+            {
+                if (variantDto.Id != Guid.Empty)
+                {
+                    var existingVariant = product.Variants.FirstOrDefault(v => v.Id == variantDto.Id);
+                    if (existingVariant != null)
+                    {
+                        existingVariant.Sku = variantDto.Sku;
+                        existingVariant.Color = variantDto.Color;
+                        existingVariant.Size = variantDto.Size;
+                        existingVariant.PriceAdjustment = variantDto.PriceAdjustment;
+                        existingVariant.StockQuantity = variantDto.StockQuantity;
+                    }
+                }
+                else
+                {
+                    product.Variants.Add(new ProductVariant
+                    {
+                        Sku = variantDto.Sku,
+                        Color = variantDto.Color,
+                        Size = variantDto.Size,
+                        PriceAdjustment = variantDto.PriceAdjustment,
+                        StockQuantity = variantDto.StockQuantity
+                    });
+                }
+            }
+        }
+
+        if (dto.Images != null && dto.Images.Any())
+        {
+            foreach (var item in product.Images)
+            {
+                _productImageRepository.Delete(item);
+            }
+            foreach(var item in dto.Images)
+            {
+                await _productImageRepository.AddAsync(new ProductImage
+                {
+                    Url = item.Url?.OriginalUrl ?? string.Empty,
+                    ThumbnailUrl = item.Url?.ThumbnailUrl ?? string.Empty,
+                    IsMain = item.IsMain,
+                    ProductId = product.Id
+                });
+            }
+        }
+
         _repository.Update(product);
         var success = await _repository.SaveChangesAsync();
-        
-        if (success)
-        {
-            await _cache.RemoveAsync(FeaturedProductsKey);
-            // Sync to search index
-            await _searchService.IndexProductAsync(MapToSearchModel(product));
-        }
-        
+
+        //if (success)
+        //{
+        //    await _cache.RemoveAsync(FeaturedProductsKey);
+        //    await _searchService.IndexProductAsync(MapToSearchModel(product));
+        //}
+
         return success;
     }
 
@@ -194,7 +254,8 @@ public class ProductService : IProductService
 
         product.Images.Add(new ProductImage
         {
-            Url = imageDto.Url,
+            Url = imageDto.Url?.OriginalUrl ?? string.Empty,
+            ThumbnailUrl = imageDto.Url?.ThumbnailUrl ?? string.Empty,
             IsMain = imageDto.IsMain
         });
 
@@ -251,6 +312,7 @@ public class ProductService : IProductService
             {
                 Id = i.Id,
                 Url = i.Url,
+                ThumbnailUrl = i.ThumbnailUrl,
                 IsMain = i.IsMain
             }).ToList()
         };

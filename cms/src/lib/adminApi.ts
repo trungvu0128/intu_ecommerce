@@ -43,14 +43,30 @@ export const AdminService = {
   createProduct: (dto: any) =>
     api.post<ApiResponse<any>>('/api/admin/products', dto).then(r => r.data.data),
 
+  createProductWithImages: (formData: FormData) =>
+    api.post<ApiResponse<any>>('/api/admin/products', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data.data),
+
   updateProduct: (id: string, dto: any) =>
     api.put(`/api/admin/products/${id}`, dto),
+
+  updateProductWithImages: (id: string, formData: FormData) =>
+    api.put(`/api/admin/products/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
 
   deleteProduct: (id: string) =>
     api.delete(`/api/admin/products/${id}`),
 
   updateStock: (variantId: string, quantity: number) =>
     api.patch('/api/admin/products/stock', { variantId, quantity }),
+
+  importProducts: (formData: FormData) => {
+    return api.post<ApiResponse<{ success: number; failed: number; errors: string[]; importedProducts?: any[] }>>('/api/admin/products/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data.data);
+  },
 
   // ─── Banners ─────────────────────────────────────────────────────────────────
   getBanners: () =>
@@ -201,7 +217,7 @@ export const AdminService = {
     const formData = new FormData();
     formData.append('file', file);
     if (subfolder) formData.append('subfolder', subfolder);
-    return api.post<{ message: string; data: string }>('/api/Upload/image', formData, {
+    return api.post<{ message: string; data: { originalUrl: string; thumbnailUrl: string } }>('/api/Upload/image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data.data);
   },

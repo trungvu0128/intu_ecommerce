@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, Package, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Search, Upload } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AdminService } from '@/lib/adminApi';
 import type { Product } from '@/types';
 import type { AdminCategory } from '@/types/admin';
+import ProductImportModal from '@/components/ProductImportModal';
 
 function formatCurrency(n: number) {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
@@ -15,6 +16,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -45,9 +47,18 @@ export default function ProductsPage() {
           <h1 className="admin-page-title">Products</h1>
           <p className="admin-page-sub">{products.length} products</p>
         </div>
-        <Link to="/products/new" className="btn btn--primary">
-          <Plus size={16} /> Add Product
-        </Link>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            className="btn btn--outline" 
+            onClick={() => setImportModalOpen(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <Upload size={16} /> Import
+          </button>
+          <Link to="/products/new" className="btn btn--primary">
+            <Plus size={16} /> Add Product
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}
@@ -143,6 +154,12 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      <ProductImportModal 
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={load}
+      />
     </div>
   );
 }

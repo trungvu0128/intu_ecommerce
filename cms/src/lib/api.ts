@@ -62,8 +62,20 @@ api.interceptors.response.use(
     // Auto-show error toasts globally
     import('@/store/useToastStore').then(({ useToastStore }) => {
       const rd = error.response?.data as any;
-      // Depending on API response shape, extract the most meaningful error message
-      const msg = rd?.message || rd?.data || error.message || 'Operation failed';
+      let msg = 'Operation failed';
+      
+      if (error.response?.status === 500) {
+        msg = rd?.message || rd?.data || 'Server error occurred. Please try again later.';
+      } else if (error.response?.status === 404) {
+        msg = 'Resource not found';
+      } else if (error.response?.status === 403) {
+        msg = 'Access denied. You do not have permission to perform this action.';
+      } else if (error.response?.status === 400) {
+        msg = rd?.message || rd?.data || 'Invalid request. Please check your input.';
+      } else {
+        msg = rd?.message || rd?.data || error.message || 'Operation failed';
+      }
+      
       useToastStore.getState().showToast(msg, 'error');
     });
 

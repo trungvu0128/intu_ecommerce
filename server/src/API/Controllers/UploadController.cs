@@ -18,7 +18,7 @@ public class UploadController : ControllerBase
     }
 
     [HttpPost("image")]
-    // [Authorize(Roles = "Admin")] // Uncomment if only admins should upload
+    [Authorize(Roles = "Admin")] // Uncomment if only admins should upload
     public async Task<IActionResult> UploadImage(IFormFile file, [FromForm] string subfolder = "")
     {
         if (file == null || file.Length == 0)
@@ -30,7 +30,7 @@ public class UploadController : ControllerBase
         {
             using var stream = file.OpenReadStream();
             var result = await _imageService.UploadImageAsync(stream, subfolder);
-            
+
             return Ok(new
             {
                 message = "Image uploaded successfully",
@@ -42,5 +42,15 @@ public class UploadController : ControllerBase
             _logger.LogError(ex, "Error uploading image");
             return StatusCode(500, "An error occurred while uploading the image.");
         }
+    }
+
+
+    [HttpGet()]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetImageUrl(string key)
+    {
+
+        var result = await _imageService.GetAccessibleUrlAsync(key);
+        return Ok(result);
     }
 }

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Upload, Image as ImageIcon, GripVertical, X } from 'lucide-react';
 import { AdminService } from '@/lib/adminApi';
 import ImageUploader from '@/components/ImageUploader';
 import type { AdminCategory } from '@/types/admin';
@@ -18,6 +18,7 @@ interface ImageItem {
   id?: string;
   url: string;
   isMain: boolean;
+  file?: File;
 }
 
 interface ProductForm {
@@ -44,6 +45,18 @@ const defaultForm: ProductForm = {
   images: [{ url: '', isMain: true }],
 };
 
+// Recursively resolve a url value that may be a string, a UrlDto, or a doubly-nested object
+function resolveUrl(val: any): string {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'object') {
+    // Try originalUrl first, then thumbnailUrl, then url
+    const candidate = val.originalUrl ?? val.thumbnailUrl ?? val.url ?? '';
+    return resolveUrl(candidate); // recurse in case it's still nested
+  }
+  return String(val);
+}
+
 function toSlug(s: string) {
   return s.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 }
@@ -57,6 +70,7 @@ export default function ProductEditor() {
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     AdminService.getAdminCategories().then(setCategories).catch(console.error);
@@ -73,7 +87,11 @@ export default function ProductEditor() {
             categoryId: p.category?.id ?? p.categoryId ?? '',
             brandId: p.brandId ?? '',
             variants: p.variants?.length ? p.variants : defaultForm.variants,
-            images: p.images?.length ? p.images : defaultForm.images,
+            images: p.images?.length ? p.images.map((img: any) => ({
+              id: img.id,
+              url: resolveUrl(img.url) || resolveUrl(img.thumbnailUrl),
+              isMain: img.isMain
+            })) : defaultForm.images,
           });
         })
         .finally(() => setLoading(false));
@@ -83,6 +101,58 @@ export default function ProductEditor() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const imagesWithFiles = form.images.filter(img => img.file);
+
+      // Build image payload for existing (non-file) images
+      let processedImages = form.images.filter(img => !img.file).map(img => {
+        const flatUrl = resolveUrl(img.url);
+        return {
+          url: {
+            originalUrl: flatUrl,
+            thumbnailUrl: flatUrl
+          },
+          isMain: img.isMain
+        };
+      });
+
+      if (imagesWithFiles.length > 0) {
+        const uploadPromises = imagesWithFiles.map(async (img) => {
+          if (img.file) {
+            const fileKey = `${img.file.name}-${img.file.size}-${img.file.lastModified}`;
+
+            if (uploadedImageUrls.has(fileKey)) {
+              const cachedUrl = uploadedImageUrls.get(fileKey)!;
+              return {
+                url: {
+                  originalUrl: cachedUrl,
+                  thumbnailUrl: cachedUrl
+                },
+                isMain: img.isMain
+              };
+            }
+
+            // uploadImage returns { originalUrl, thumbnailUrl }
+            const result = await AdminService.uploadImage(img.file, 'products');
+            const uploadedUrl = result.originalUrl;
+            const uploadedThumb = result.thumbnailUrl || uploadedUrl;
+            setUploadedImageUrls(prev => new Map(prev).set(fileKey, uploadedUrl));
+
+            return {
+              url: {
+                originalUrl: uploadedUrl,
+                thumbnailUrl: uploadedThumb
+              },
+              isMain: img.isMain
+            };
+          }
+          return null;
+        });
+
+        const uploadedImages = await Promise.all(uploadPromises);
+        const validUploadedImages = uploadedImages.filter(img => img !== null);
+        processedImages = [...processedImages, ...validUploadedImages];
+      }
+
       const payload = {
         name: form.name,
         slug: form.slug,
@@ -92,13 +162,16 @@ export default function ProductEditor() {
         categoryId: form.categoryId,
         brandId: form.brandId,
         variants: form.variants.filter(v => v.sku),
-        images: form.images.filter(i => i.url),
+        images: processedImages,
       };
+
       if (isNew) {
         await AdminService.createProduct(payload);
       } else {
         await AdminService.updateProduct(id!, payload);
       }
+
+      setUploadedImageUrls(new Map());
       navigate('/products');
     } catch (e) {
       console.error(e);
@@ -127,6 +200,26 @@ export default function ProductEditor() {
 
   const addImage = () => setForm(f => ({ ...f, images: [...f.images, { url: '', isMain: false }] }));
   const removeImage = (idx: number) => setForm(f => ({ ...f, images: f.images.filter((_, i) => i !== idx) }));
+
+  const handleMultipleImageUpload = (files: FileList) => {
+    const newImages = Array.from(files).map(file => ({
+      url: URL.createObjectURL(file),
+      isMain: false,
+      file: file
+    }));
+    setForm(f => ({ ...f, images: [...f.images, ...newImages] }));
+  };
+
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    setForm(f => {
+      const newImages = [...f.images];
+      const [movedImage] = newImages.splice(fromIndex, 1);
+      newImages.splice(toIndex, 0, movedImage);
+      return { ...f, images: newImages };
+    });
+  };
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (loading) {
     return <div className="admin-loading-center"><div className="admin-spinner" /></div>;
@@ -206,27 +299,187 @@ export default function ProductEditor() {
           <div className="admin-card" style={{ padding: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <div style={{ fontWeight: 700, color: 'var(--admin-text)' }}>Images</div>
-              <button className="btn btn--ghost btn--sm" onClick={addImage}><Plus size={14} /> Add Image</button>
-            </div>
-            {form.images.map((img, idx) => (
-              <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr auto auto', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-                <ImageUploader 
-                  value={img.url} 
-                  onChange={(url: string) => setImage(idx, 'url', url)} 
-                  folder={`products/${form.slug || 'new'}`}
-                  placeholder="Image URL or click Upload"
-                />
-                <label className="form-check" style={{ whiteSpace: 'nowrap', gap: 4 }}>
-                  <input type="checkbox" checked={img.isMain} onChange={e => {
-                    setForm(f => ({ ...f, images: f.images.map((im, i) => ({ ...im, isMain: i === idx ? e.target.checked : false })) }));
-                  }} />
-                  Main
-                </label>
-                <button className="btn btn--danger btn--icon btn--sm" onClick={() => removeImage(idx)} disabled={form.images.length === 1}>
-                  <Trash2 size={14} />
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn--ghost btn--sm" onClick={() => fileInputRef.current?.click()}>
+                  <Upload size={14} /> Upload Multiple
                 </button>
+                <button className="btn btn--ghost btn--sm" onClick={addImage}><Plus size={14} /> Add URL</button>
               </div>
-            ))}
+            </div>
+
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: 'none' }}
+              ref={fileInputRef}
+              onChange={(e) => {
+                if (e.target.files && e.target.files.length > 0) {
+                  handleMultipleImageUpload(e.target.files);
+                }
+              }}
+            />
+
+            {form.images.length === 0 ? (
+              <div
+                style={{
+                  border: '2px dashed #e5e7eb',
+                  borderRadius: '8px',
+                  padding: '40px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  backgroundColor: 'rgba(249, 250, 251, 0.5)',
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = '#3b82f6';
+                  e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = '#e5e7eb';
+                  e.currentTarget.style.backgroundColor = 'rgba(249, 250, 251, 0.5)';
+                }}
+              >
+                <Upload size={48} style={{ color: '#9ca3af', marginBottom: '12px' }} />
+                <div style={{ fontWeight: 500, color: '#374151', marginBottom: '4px' }}>
+                  Click to upload images
+                </div>
+                <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                  JPG, PNG, GIF, WebP supported
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+                {form.images.map((img, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      position: 'relative',
+                      border: img.isMain ? '2px solid #3b82f6' : '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      backgroundColor: '#f9fafb',
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        zIndex: 10,
+                        display: 'flex',
+                        gap: 4,
+                      }}
+                    >
+                      <button
+                        className="btn btn--ghost btn--icon btn--sm"
+                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '4px' }}
+                        onClick={() => moveImage(idx, Math.max(0, idx - 1))}
+                        disabled={idx === 0}
+                      >
+                        <GripVertical size={14} />
+                      </button>
+                      <button
+                        className="btn btn--ghost btn--icon btn--sm"
+                        style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '4px' }}
+                        onClick={() => moveImage(idx, Math.min(form.images.length - 1, idx + 1))}
+                        disabled={idx === form.images.length - 1}
+                      >
+                        <GripVertical size={14} />
+                      </button>
+                    </div>
+
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        zIndex: 10,
+                      }}
+                    >
+                      <button
+                        className="btn btn--danger btn--icon btn--sm"
+                        style={{
+                          backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                          borderRadius: '4px',
+                          padding: '6px',
+                          minWidth: '32px',
+                          minHeight: '32px'
+                        }}
+                        onClick={() => removeImage(idx)}
+                        disabled={form.images.length === 1}
+                        title="Remove image"
+                      >
+                        <Trash2 size={14} style={{ color: 'white' }} />
+                      </button>
+                    </div>
+
+                    {img.url ? (
+                      <img
+                        src={img.url}
+                        alt={`Product image ${idx + 1}`}
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '200px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 8,
+                          backgroundColor: '#f3f4f6',
+                        }}
+                      >
+                        <ImageIcon size={32} style={{ color: '#9ca3af' }} />
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>No image</div>
+                        <button
+                          className="btn btn--danger btn--sm"
+                          onClick={() => removeImage(idx)}
+                          style={{ marginTop: '8px' }}
+                        >
+                          <Trash2 size={14} style={{ display: 'inline', marginRight: '4px' }} />
+                          Remove
+                        </button>
+                      </div>
+                    )}
+
+                    <div
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        padding: '12px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderTop: '1px solid #e5e7eb',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <label className="form-check" style={{ margin: 0, gap: 4, fontSize: '12px' }}>
+                          <input
+                            type="checkbox"
+                            checked={img.isMain}
+                            onChange={e => {
+                              setForm(f => ({ ...f, images: f.images.map((im, i) => ({ ...im, isMain: i === idx ? e.target.checked : false })) }));
+                            }}
+                          />
+                          Main
+                        </label>
+                        <span style={{ fontSize: '11px', color: '#6b7280' }}>#{idx + 1}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

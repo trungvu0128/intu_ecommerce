@@ -22,7 +22,7 @@ public class CreateProductDto
     public decimal BasePrice { get; set; }
     public bool IsFeatured { get; set; }
     public Guid CategoryId { get; set; }
-    public Guid BrandId { get; set; }
+    public Guid BrandId = new Guid("db6fc557-aea3-4df2-b3f9-dbc63f8e986f");
     public List<CreateProductVariantDto> Variants { get; set; } = new();
     public List<CreateProductImageDto> Images { get; set; } = new();
 }
@@ -35,7 +35,9 @@ public class UpdateProductDto
     public decimal BasePrice { get; set; }
     public bool IsFeatured { get; set; }
     public Guid CategoryId { get; set; }
-    public Guid BrandId { get; set; }
+    public Guid BrandId = new Guid("db6fc557-aea3-4df2-b3f9-dbc63f8e986f");
+    public List<CreateProductVariantDto>? Variants { get; set; }
+    public List<CreateProductImageDto>? Images { get; set; }
 }
 
 public class UpdateStockDto

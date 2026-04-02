@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import AdminLayout from '@/layouts/AdminLayout';
 import LoginPage from '@/pages/Login';
 import DashboardPage from '@/pages/Dashboard';
@@ -20,36 +21,38 @@ import GoodIssuePage from '@/pages/GoodIssue';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public */}
-        <Route path="/login" element={<LoginPage />} />
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          {/* Public */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected admin routes */}
-        <Route element={<AdminLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="products" element={<ProductsPage />} />
-          <Route path="products/new" element={<ProductEditor />} />
-          <Route path="products/:id" element={<ProductEditor />} />
-          <Route path="inventory" element={<InventoryPage />} />
-          <Route path="inventory/reasons" element={<InventoryReasonsPage />} />
-          <Route path="inventory/good-receipt" element={<GoodReceiptPage />} />
-          <Route path="inventory/good-issue" element={<GoodIssuePage />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="categories" element={<CategoriesPage />} />
-          <Route path="banners" element={<BannersPage />} />
-          <Route path="featured-sections" element={<FeaturedSectionsPage />} />
-          <Route path="blogs" element={<BlogsPage />} />
-          <Route path="blogs/new" element={<BlogEditor />} />
-          <Route path="blogs/:id" element={<BlogEditor />} />
-          <Route path="coupons" element={<CouponsPage />} />
-          <Route path="customers" element={<CustomersPage />} />
-          <Route path="users" element={<UsersPage />} />
-        </Route>
+          {/* Protected admin routes */}
+          <Route element={<AdminLayout />}>
+            <Route index element={<DashboardPage />} />
+            <Route path="products" element={<ProductsPage />} />
+            <Route path="products/new" element={<ProductEditor />} />
+            <Route path="products/:id" element={<ProductEditor />} />
+            <Route path="inventory" element={<InventoryPage />} />
+            <Route path="inventory/reasons" element={<InventoryReasonsPage />} />
+            <Route path="inventory/good-receipt" element={<GoodReceiptPage />} />
+            <Route path="inventory/good-issue" element={<GoodIssuePage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="categories" element={<CategoriesPage />} />
+            <Route path="banners" element={<BannersPage />} />
+            <Route path="featured-sections" element={<FeaturedSectionsPage />} />
+            <Route path="blogs" element={<BlogsPage />} />
+            <Route path="blogs/new" element={<BlogEditor />} />
+            <Route path="blogs/:id" element={<BlogEditor />} />
+            <Route path="coupons" element={<CouponsPage />} />
+            <Route path="customers" element={<CustomersPage />} />
+            <Route path="users" element={<UsersPage />} />
+          </Route>
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
