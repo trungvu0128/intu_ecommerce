@@ -91,6 +91,16 @@ export interface AdminCategory {
   parentName?: string;
   productCount: number;
   createdAt: string;
+  products?: CategoryProduct[];
+}
+
+export interface CategoryProduct {
+  id: string;
+  name: string;
+  slug: string;
+  basePrice: number;
+  mainImageUrl?: string;
+  isActive: boolean;
 }
 
 export interface CreateCategoryRequest {

@@ -11,4 +11,8 @@ public class Category : BaseEntity
     public Category? Parent { get; set; }
     public List<Category> SubCategories { get; set; } = new();
     public List<Product> Products { get; set; } = new();
+
+    // Many-to-many
+    public List<ProductCategory> ProductCategories { get; set; } = new();
 }
+

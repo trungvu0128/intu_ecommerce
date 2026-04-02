@@ -9,20 +9,22 @@ namespace LotusEcommerce.Infrastructure.Services;
 public class CmsService : ICmsService
 {
     private readonly AppDbContext _context;
+    private readonly IImageService _imageService;
 
-    public CmsService(AppDbContext context)
+    public CmsService(AppDbContext context, IImageService imageService)
     {
         _context = context;
+        _imageService = imageService;
     }
 
     // ─── Banners ──────────────────────────────────────────────────────────────
 
     public async Task<IEnumerable<BannerDto>> GetBannersAsync()
     {
-        return await _context.Banners
+        var bn =  await _context.Banners
             .OrderBy(b => b.DisplayOrder)
-            .Select(b => MapBanner(b))
             .ToListAsync();
+        return bn.Select(b => MapBanner(b));
     }
 
     public async Task<BannerDto?> GetBannerByIdAsync(Guid id)
@@ -36,7 +38,7 @@ public class CmsService : ICmsService
         var b = new Banner
         {
             Title = dto.Title,
-            ImageUrl = dto.ImageUrl,
+            ImageUrl = _imageService.GetPublicUrlAsync(dto.ImageUrl).Result,
             LinkUrl = dto.LinkUrl,
             Position = dto.Position,
             DisplayOrder = dto.DisplayOrder,
@@ -72,7 +74,7 @@ public class CmsService : ICmsService
         return true;
     }
 
-    private static BannerDto MapBanner(Banner b) => new()
+    private BannerDto MapBanner(Banner b) => new()
     {
         Id = b.Id,
         Title = b.Title,
@@ -318,7 +320,7 @@ public class CmsService : ICmsService
         _context.FeaturedSectionItems.RemoveRange(section.Items);
         if (sectionType == FeaturedSectionType.Manual)
         {
-            section.Items = dto.Items.Select(i => new FeaturedSectionItem
+            _context.FeaturedSectionItems.AddRange(dto.Items.Select(i => new FeaturedSectionItem
             {
                 FeaturedSectionId = id,
                 ProductId = i.ProductId,
@@ -326,7 +328,7 @@ public class CmsService : ICmsService
                 LinkUrl = i.LinkUrl,
                 ImageUrl = i.ImageUrl,
                 DisplayOrder = i.DisplayOrder,
-            }).ToList();
+            }).ToList());
         }
         else
         {
@@ -367,7 +369,9 @@ public class CmsService : ICmsService
             // Dynamically fetch products from the category
             var products = await _context.Products
                 .Include(p => p.Images)
-                .Where(p => p.CategoryId == s.CategoryId.Value && p.IsActive)
+                .Where(p => (p.CategoryId == s.CategoryId.Value
+                    || p.ProductCategories.Any(pc => pc.CategoryId == s.CategoryId.Value))
+                    && p.IsActive)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
@@ -377,8 +381,8 @@ public class CmsService : ICmsService
                 ProductId = p.Id,
                 ProductName = p.Name,
                 ProductSlug = p.Slug,
-                ProductImage = p.Images.FirstOrDefault(img => img.IsMain)?.Url
-                              ?? p.Images.FirstOrDefault()?.Url,
+                ProductImage = _imageService.GetPublicUrlAsync(p.Images.FirstOrDefault(img => img.IsMain)?.Url
+                              ?? p.Images.FirstOrDefault()?.Url ?? string.Empty).Result,
                 ProductPrice = p.BasePrice,
                 DisplayOrder = index,
             }).ToList();
@@ -391,8 +395,8 @@ public class CmsService : ICmsService
                 ProductId = i.ProductId,
                 ProductName = i.Product?.Name ?? string.Empty,
                 ProductSlug = i.Product?.Slug,
-                ProductImage = i.Product?.Images?.FirstOrDefault(img => img.IsMain)?.Url
-                              ?? i.Product?.Images?.FirstOrDefault()?.Url,
+                ProductImage = _imageService.GetPublicUrlAsync(i.Product?.Images.FirstOrDefault(img => img.IsMain)?.Url
+                              ?? i.Product?.Images.FirstOrDefault()?.Url ?? string.Empty).Result,
                 ProductPrice = i.Product?.BasePrice ?? 0,
                 OverlayText = i.OverlayText,
                 LinkUrl = i.LinkUrl,

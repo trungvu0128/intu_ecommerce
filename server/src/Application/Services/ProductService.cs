@@ -16,13 +16,17 @@ public class ProductService : IProductService
     private const string FeaturedProductsKey = "featured_products";
     private readonly IProductImageRepository _productImageRepository;
     private readonly IProductVariantRepository _productVariantRepository;
-    public ProductService(IProductRepository repository, IDistributedCache cache, ISearchService searchService, IProductImageRepository productImageRepository, IProductVariantRepository productVariantRepository)
+    private readonly IImageService _imageService;
+    private readonly IProductCategoryRepository _productCategoryRepository;
+    public ProductService(IProductRepository repository, IDistributedCache cache, ISearchService searchService, IProductImageRepository productImageRepository, IProductVariantRepository productVariantRepository, IImageService imageService, IProductCategoryRepository productCategoryRepository)
     {
         _repository = repository;
         _cache = cache;
         _searchService = searchService;
         _productImageRepository = productImageRepository;
         _productVariantRepository = productVariantRepository;
+        _imageService = imageService;
+        _productCategoryRepository = productCategoryRepository;
     }
 
 
@@ -71,6 +75,11 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
     {
+        // Resolve category IDs: prefer CategoryIds list, fall back to single CategoryId
+        var categoryIds = dto.CategoryIds != null && dto.CategoryIds.Any()
+            ? dto.CategoryIds
+            : (dto.CategoryId != Guid.Empty ? new List<Guid> { dto.CategoryId } : new List<Guid>());
+
         var product = new Product
         {
             Name = dto.Name,
@@ -78,7 +87,8 @@ public class ProductService : IProductService
             Description = dto.Description,
             BasePrice = dto.BasePrice,
             IsFeatured = dto.IsFeatured,
-            CategoryId = dto.CategoryId,
+            SizeChartImage = dto.SizeChartImage,
+            CategoryId = categoryIds.FirstOrDefault(),
             BrandId = dto.BrandId,
             Variants = dto.Variants.Select(v => new ProductVariant
             {
@@ -93,16 +103,15 @@ public class ProductService : IProductService
                 Url = i.Url?.OriginalUrl ?? string.Empty,
                 ThumbnailUrl = i.Url?.ThumbnailUrl ?? string.Empty,
                 IsMain = i.IsMain
+            }).ToList(),
+            ProductCategories = categoryIds.Select(cId => new ProductCategory
+            {
+                CategoryId = cId
             }).ToList()
         };
 
         await _repository.AddAsync(product);
         await _repository.SaveChangesAsync();
-
-        //if (product.IsFeatured) await _cache.RemoveAsync(FeaturedProductsKey);
-
-        // Sync to search index
-        //await _searchService.IndexProductAsync(MapToSearchModel(product));
 
         return MapToDto(product);
     }
@@ -112,14 +121,31 @@ public class ProductService : IProductService
         var product = await _repository.GetByIdAsync(id);
         if (product == null) return false;
 
+        // Resolve category IDs: prefer CategoryIds list, fall back to single CategoryId
+        var categoryIds = dto.CategoryIds != null && dto.CategoryIds.Any()
+            ? dto.CategoryIds
+            : (dto.CategoryId != Guid.Empty ? new List<Guid> { dto.CategoryId } : new List<Guid>());
+
         product.Name = dto.Name;
         product.Slug = dto.Slug;
         product.Description = dto.Description;
         product.BasePrice = dto.BasePrice;
         product.IsFeatured = dto.IsFeatured;
-        product.CategoryId = dto.CategoryId;
+        product.SizeChartImage = dto.SizeChartImage;
+        product.CategoryId = categoryIds.FirstOrDefault();
         product.BrandId = dto.BrandId;
         product.UpdatedAt = DateTime.UtcNow;
+
+        // Replace product-category M2M entries
+        _productCategoryRepository.RemoveRange(product.ProductCategories);
+        foreach (var cId in categoryIds)
+        {
+            await _productCategoryRepository.AddAsync( new ProductCategory
+            {
+                ProductId = product.Id,
+                CategoryId = cId
+            });
+        }
 
         if (dto.Variants != null && dto.Variants.Any())
         {
@@ -128,7 +154,7 @@ public class ProductService : IProductService
 
             foreach (var variant in variantsToRemove)
             {
-                product.Variants.Remove(variant);
+                _productVariantRepository.Delete(variant);
             }
 
             foreach (var variantDto in dto.Variants)
@@ -147,13 +173,14 @@ public class ProductService : IProductService
                 }
                 else
                 {
-                    product.Variants.Add(new ProductVariant
+                    await _productVariantRepository.AddAsync(new ProductVariant
                     {
                         Sku = variantDto.Sku,
                         Color = variantDto.Color,
                         Size = variantDto.Size,
                         PriceAdjustment = variantDto.PriceAdjustment,
-                        StockQuantity = variantDto.StockQuantity
+                        StockQuantity = variantDto.StockQuantity,
+                        ProductId = product.Id
                     });
                 }
             }
@@ -291,14 +318,25 @@ public class ProductService : IProductService
             BasePrice = p.BasePrice,
             IsFeatured = p.IsFeatured,
             IsActive = p.IsActive,
+            SizeChartImage = p.SizeChartImage,
             Category = p.Category != null ? new CategoryDto
             {
                 Id = p.Category.Id,
                 Name = p.Category.Name,
                 Slug = p.Category.Slug,
                 Description = p.Category.Description,
-                ImageUrl = p.Category.ImageUrl
+                ImageUrl = p.Category.ImageUrl,
+                IsActive = p.Category.IsActive
             } : null!,
+            Categories = p.ProductCategories?.Select(pc => new CategoryDto
+            {
+                Id = pc.Category.Id,
+                Name = pc.Category.Name,
+                Slug = pc.Category.Slug,
+                Description = pc.Category.Description,
+                ImageUrl = pc.Category.ImageUrl,
+                IsActive = pc.Category.IsActive
+            }).ToList() ?? new List<CategoryDto>(),
             Variants = p.Variants.Select(v => new ProductVariantDto
             {
                 Id = v.Id,
@@ -311,8 +349,8 @@ public class ProductService : IProductService
             Images = p.Images.Select(i => new ProductImageDto
             {
                 Id = i.Id,
-                Url = i.Url,
-                ThumbnailUrl = i.ThumbnailUrl,
+                ThumbnailUrl =_imageService.GetPublicUrlAsync(i.ThumbnailUrl).Result,
+                Url = _imageService.GetPublicUrlAsync(i.Url).Result,
                 IsMain = i.IsMain
             }).ToList()
         };

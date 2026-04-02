@@ -5,8 +5,8 @@ import Image from 'next/image';
 
 const Footer = () => {
   return (
-    <footer className="bg-white text-black pt-16 pb-tab-bar md:pb-12 px-4 md:px-12">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-24">
+    <footer className="hidden md:block bg-white text-black pt-16 pb-12 px-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-3 gap-24">
         {/* About Us */}
         <div className="flex flex-col space-y-6">
           <div className="border-b border-black pb-1 self-start min-w-[100px]">

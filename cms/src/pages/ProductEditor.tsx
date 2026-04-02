@@ -27,10 +27,11 @@ interface ProductForm {
   description: string;
   basePrice: number;
   isFeatured: boolean;
-  categoryId: string;
+  categoryIds: string[];
   brandId: string;
   variants: Variant[];
   images: ImageItem[];
+  sizeChartImage?: string;
 }
 
 const defaultForm: ProductForm = {
@@ -39,7 +40,7 @@ const defaultForm: ProductForm = {
   description: '',
   basePrice: 0,
   isFeatured: false,
-  categoryId: '',
+  categoryIds: [],
   brandId: '',
   variants: [{ sku: '', color: '', size: '', priceAdjustment: 0, stockQuantity: 0 }],
   images: [{ url: '', isMain: true }],
@@ -84,7 +85,9 @@ export default function ProductEditor() {
             description: p.description,
             basePrice: p.basePrice,
             isFeatured: p.isFeatured,
-            categoryId: p.category?.id ?? p.categoryId ?? '',
+            categoryIds: p.categories?.length
+              ? p.categories.map((c: any) => c.id)
+              : (p.category?.id ? [p.category.id] : []),
             brandId: p.brandId ?? '',
             variants: p.variants?.length ? p.variants : defaultForm.variants,
             images: p.images?.length ? p.images.map((img: any) => ({
@@ -92,6 +95,7 @@ export default function ProductEditor() {
               url: resolveUrl(img.url) || resolveUrl(img.thumbnailUrl),
               isMain: img.isMain
             })) : defaultForm.images,
+            sizeChartImage: resolveUrl(p.sizeChartImage),
           });
         })
         .finally(() => setLoading(false));
@@ -159,7 +163,8 @@ export default function ProductEditor() {
         description: form.description,
         basePrice: form.basePrice,
         isFeatured: form.isFeatured,
-        categoryId: form.categoryId,
+        sizeChartImage: form.sizeChartImage ?? '',
+        categoryIds: form.categoryIds,
         brandId: form.brandId,
         variants: form.variants.filter(v => v.sku),
         images: processedImages,
@@ -295,9 +300,22 @@ export default function ProductEditor() {
             ))}
           </div>
 
-          {/* Images */}
-          <div className="admin-card" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div className="card">
+          <div className="card-header">
+            <h2 className="card-title">Size Chart</h2>
+          </div>
+          <div className="card-body">
+            <ImageUploader 
+              value={form.sizeChartImage || ''}
+              onChange={(url) => setForm(f => ({ ...f, sizeChartImage: url }))}
+              folder="products"
+              placeholder="Paste size chart URL or upload image"
+            />
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontWeight: 700, color: 'var(--admin-text)' }}>Images</div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn btn--ghost btn--sm" onClick={() => fileInputRef.current?.click()}>
@@ -493,11 +511,70 @@ export default function ProductEditor() {
                 <input className="form-control" type="number" value={form.basePrice} onChange={e => setForm(f => ({ ...f, basePrice: Number(e.target.value) }))} />
               </div>
               <div className="form-group">
-                <label>Category *</label>
-                <select className="form-control" value={form.categoryId} onChange={e => setForm(f => ({ ...f, categoryId: e.target.value }))}>
-                  <option value="">— Select Category —</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+                <label>Categories *</label>
+                <div style={{
+                  border: '1px solid var(--admin-border)',
+                  borderRadius: 8,
+                  maxHeight: 200,
+                  overflowY: 'auto',
+                  padding: '8px 0',
+                  background: 'var(--admin-surface-2)'
+                }}>
+                  {categories.map(c => (
+                    <label
+                      key={c.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '6px 12px',
+                        cursor: 'pointer',
+                        fontSize: 13,
+                        transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--admin-hover)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={form.categoryIds.includes(c.id)}
+                        onChange={e => {
+                          setForm(f => ({
+                            ...f,
+                            categoryIds: e.target.checked
+                              ? [...f.categoryIds, c.id]
+                              : f.categoryIds.filter(id => id !== c.id)
+                          }));
+                        }}
+                      />
+                      {c.name}
+                    </label>
+                  ))}
+                  {categories.length === 0 && (
+                    <div style={{ padding: '8px 12px', color: '#9ca3af', fontSize: 13 }}>No categories available</div>
+                  )}
+                </div>
+                {form.categoryIds.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                    {form.categoryIds.map(cId => {
+                      const cat = categories.find(c => c.id === cId);
+                      return cat ? (
+                        <span key={cId} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 4,
+                          background: 'var(--admin-primary)', color: '#fff',
+                          borderRadius: 12, padding: '2px 10px', fontSize: 11, fontWeight: 500
+                        }}>
+                          {cat.name}
+                          <button
+                            type="button"
+                            onClick={() => setForm(f => ({ ...f, categoryIds: f.categoryIds.filter(id => id !== cId) }))}
+                            style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1 }}
+                          >×</button>
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
               </div>
               <label className="form-check">
                 <input type="checkbox" checked={form.isFeatured} onChange={e => setForm(f => ({ ...f, isFeatured: e.target.checked }))} />

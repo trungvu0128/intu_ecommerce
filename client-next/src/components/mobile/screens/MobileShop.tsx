@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { SlidersHorizontal, Search } from 'lucide-react';
 import MobileLayout from '@/components/mobile/MobileLayout';
 import { ProductService, CategoryService } from '@/lib/api';
+import { getMainThumbnailUrl } from '@/lib/image-utils';
 import type { Product, Category } from '@/types';
 
 export default function MobileShop() {
@@ -27,8 +28,8 @@ export default function MobileShop() {
           ProductService.getAll({ pageSize: 50 }),
           CategoryService.getAll().catch(() => []),
         ]);
-        setProducts(productsData);
-        setCategories(categoriesData);
+        setProducts(productsData.filter(p => p.isActive !== false));
+        setCategories(categoriesData.filter(c => c.isActive !== false));
       } catch (error) {
         console.error('Failed to fetch products:', error);
       } finally {
@@ -40,7 +41,10 @@ export default function MobileShop() {
 
   const filtered = products
     .filter(p => {
-      if (activeCategory && p.category?.slug !== activeCategory) return false;
+      if (activeCategory) {
+        const match = p.category?.slug === activeCategory || p.categories?.some(c => c.slug === activeCategory);
+        if (!match) return false;
+      }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return p.name.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
@@ -56,7 +60,7 @@ export default function MobileShop() {
       }
     });
 
-  const mainImage = (p: Product) => p.images?.find(i => i.isMain)?.url || p.images?.[0]?.url || '';
+  const mainImage = (p: Product) => getMainThumbnailUrl(p.images);
 
   return (
     <MobileLayout>

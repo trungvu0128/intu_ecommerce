@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ProductService } from '@/lib/api';
+import { getMainThumbnailUrl } from '@/lib/image-utils';
 import type { Product } from '@/types';
 import { Search, X, Loader2 } from 'lucide-react';
 
@@ -101,7 +102,7 @@ const SearchPopover = ({ onClose }: SearchPopoverProps) => {
                   >
                     <div className="w-12 h-16 relative bg-[#f5f5f5] flex-shrink-0">
                       <Image
-                        src={product.images?.find(i => i.isMain)?.url || product.images?.[0]?.url || ''}
+                        src={getMainThumbnailUrl(product.images)}
                         alt={product.name}
                         fill
                         className="object-cover"

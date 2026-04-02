@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import ProductCard from "@/components/home/ProductCard";
 import { PRODUCT_COLORS, PRODUCT_CATEGORIES } from "@/mock-data";
 import { ProductService } from "@/lib/api";
+import { getMainThumbnailUrl, getHoverImageUrl } from '@/lib/image-utils';
 import type { Product } from "@/types";
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -369,8 +370,8 @@ const Shop = () => {
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-14">
                 {visibleProducts.map((product, index) => {
-                  const mainImageURL = product.images?.find(img => img.isMain)?.url || product.images?.[0]?.url || "";
-                  const hoverImageURL = product.images?.find(img => !img.isMain)?.url;
+                  const mainImageURL = getMainThumbnailUrl(product.images);
+                  const hoverImageURL = getHoverImageUrl(product.images);
                   
                   return (
                     <div

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import ProductDetail from '@/components/screens/ProductDetail';
 import { ProductPageSwitch } from '@/components/mobile/ProductPageSwitch';
 import { ProductService } from '@/lib/api';
+import { getMainImageUrl, getImageUrl } from '@/lib/image-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       : await ProductService.getBySlug(id);
     if (!product) return { title: 'Product Not Found | INTU∞' };
     
-    const imageUrl = product.images?.[0]?.url || '/og-image.jpg';
+    const imageUrl = getMainImageUrl(product.images) || '/og-image.jpg';
     const description = product.description?.substring(0, 160) || `Shop ${product.name} – premium streetwear from INTU∞. Free nationwide shipping.`;
     const price = product.basePrice;
     
@@ -66,7 +67,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.name,
-        image: product.images?.map((img: any) => img.url) || [],
+        image: product.images?.map((img: any) => getImageUrl(img)) || [],
         description: product.description,
         sku: product.id,
         brand: {

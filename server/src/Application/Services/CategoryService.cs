@@ -23,7 +23,8 @@ public class CategoryService : ICategoryService
             Name = c.Name,
             Slug = c.Slug,
             Description = c.Description,
-            ImageUrl = c.ImageUrl
+            ImageUrl = c.ImageUrl,
+            IsActive = c.IsActive
         });
     }
 
@@ -38,7 +39,8 @@ public class CategoryService : ICategoryService
             Name = c.Name,
             Slug = c.Slug,
             Description = c.Description,
-            ImageUrl = c.ImageUrl
+            ImageUrl = c.ImageUrl,
+            IsActive = c.IsActive
         };
     }
 
@@ -61,7 +63,8 @@ public class CategoryService : ICategoryService
             Name = category.Name,
             Slug = category.Slug,
             Description = category.Description,
-            ImageUrl = category.ImageUrl
+            ImageUrl = category.ImageUrl,
+            IsActive = category.IsActive
         };
     }
 

@@ -5,6 +5,7 @@ import ProductInfo from '@/components/product/ProductInfo';
 import ProductCard from '@/components/home/ProductCard';
 
 import { ProductService } from '@/lib/api';
+import { getMainImageUrl, getHoverImageUrl, getImageUrl, getMainThumbnailUrl } from '@/lib/image-utils';
 
 interface ProductDetailProps {
   id: string;
@@ -50,10 +51,11 @@ const ProductDetail = async ({ id }: ProductDetailProps) => {
     );
   }
 
-  // Fetch related products (we just take top products differing from current id)
+  // Fetch related products from the same category
   let relatedProducts: any[] = [];
   try {
-    const relatedResponse = await ProductService.getAll({ pageSize: 5 });
+    const categoryId = product?.categoryId || product?.category?.id || (product?.categories?.[0]?.id);
+    const relatedResponse = await ProductService.getAll({ categoryId, pageSize: 8 });
     // If relatedResponse is array, use it directly. If it has items, use items.
     const productsList = Array.isArray(relatedResponse) ? relatedResponse : (relatedResponse as any).items || [];
     relatedProducts = productsList.filter((p: any) => p.id !== product?.id).slice(0, 4);
@@ -61,8 +63,10 @@ const ProductDetail = async ({ id }: ProductDetailProps) => {
     console.error("Failed to fetch related products", error);
   }
 
-  const mainImageURL = product.images?.find(img => img.isMain)?.url || product.images?.[0]?.url || "";
-  const hoverImageURL = product.images?.find(img => !img.isMain)?.url;
+  const mainImageURL = getMainImageUrl(product.images);
+  const allImageUrls = product.images?.length
+    ? product.images.sort((a, b) => (b.isMain ? 1 : 0) - (a.isMain ? 1 : 0)).map(i => getImageUrl(i))
+    : [mainImageURL];
 
   return (
     <div className="min-h-screen bg-white text-black font-sans flex flex-col">
@@ -70,7 +74,7 @@ const ProductDetail = async ({ id }: ProductDetailProps) => {
       
       <main className="flex-grow pt-20">
         {/* Gallery Section */}
-        <ImageGallery images={hoverImageURL ? [mainImageURL, hoverImageURL] : [mainImageURL]} />
+        <ImageGallery images={allImageUrls.filter(Boolean)} />
 
         {/* Product Info Section */}
         <div className="max-w-7xl mx-auto">
@@ -80,11 +84,12 @@ const ProductDetail = async ({ id }: ProductDetailProps) => {
             name={product.name}
             price={`${new Intl.NumberFormat('vi-VN').format(product.basePrice)} VND`}
             image={mainImageURL}
-            image2={hoverImageURL}
+            image2={getHoverImageUrl(product.images) || undefined}
             sizes={product.variants?.map(v => v.size) || ["S", "M", "L"]} // real sizes from variant DTOs
             variants={product.variants || []}
             description={product.description || "Made from premium materials, this piece features a comfortable fit."}
             styleId={`STYLE-${product.id.substring(0,6).toUpperCase()}`}
+            sizeChartImage={product.sizeChartImage}
           />
         </div>
 
@@ -96,8 +101,8 @@ const ProductDetail = async ({ id }: ProductDetailProps) => {
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-0 gap-y-8">
             {relatedProducts.map((relProduct) => {
-              const relMainImageURL = relProduct.images?.find((img: { isMain: boolean; url: string }) => img.isMain)?.url || relProduct.images?.[0]?.url || "";
-              const relHoverImageURL = relProduct.images?.find((img: { isMain: boolean; url: string }) => !img.isMain)?.url;
+              const relMainImageURL = getMainThumbnailUrl(relProduct.images);
+              const relHoverImageURL = getHoverImageUrl(relProduct.images);
               return (
                   <ProductCard
                     key={relProduct.id}

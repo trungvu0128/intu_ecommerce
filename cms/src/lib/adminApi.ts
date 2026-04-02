@@ -130,6 +130,9 @@ export const AdminService = {
   getAdminCategories: () =>
     api.get<ApiResponse<AdminCategory[]>>('/api/admin/categories').then(r => r.data.data ?? []),
 
+  getCategoryById: (id: string) =>
+    api.get<ApiResponse<AdminCategory>>(`/api/admin/categories/${id}`).then(r => r.data.data),
+
   createCategory: (dto: CreateCategoryRequest) =>
     api.post<ApiResponse<any>>('/api/admin/categories', dto).then(r => r.data.data),
 
@@ -138,6 +141,9 @@ export const AdminService = {
 
   deleteCategory: (id: string) =>
     api.delete(`/api/admin/categories/${id}`),
+
+  updateCategoryProducts: (id: string, productIds: string[]) =>
+    api.post(`/api/admin/categories/${id}/products`, productIds),
 
   // ─── Orders ───────────────────────────────────────────────────────────────────
   getAdminOrders: (status?: string) =>

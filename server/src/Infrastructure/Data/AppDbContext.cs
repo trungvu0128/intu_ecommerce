@@ -35,6 +35,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<BlogPost> BlogPosts { get; set; } = null!;
     public DbSet<FeaturedSection> FeaturedSections { get; set; } = null!;
     public DbSet<FeaturedSectionItem> FeaturedSectionItems { get; set; } = null!;
+    public DbSet<ProductCategory> ProductCategories { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -120,6 +121,20 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             .HasMany(p => p.Images)
             .WithOne(i => i.Product)
             .HasForeignKey(i => i.ProductId);
+
+        // Many-to-many: Product <-> Category via ProductCategory join table
+        modelBuilder.Entity<ProductCategory>()
+            .HasKey(pc => new { pc.ProductId, pc.CategoryId });
+
+        modelBuilder.Entity<ProductCategory>()
+            .HasOne(pc => pc.Product)
+            .WithMany(p => p.ProductCategories)
+            .HasForeignKey(pc => pc.ProductId);
+
+        modelBuilder.Entity<ProductCategory>()
+            .HasOne(pc => pc.Category)
+            .WithMany(c => c.ProductCategories)
+            .HasForeignKey(pc => pc.CategoryId);
 
         // Variant configurations
         modelBuilder.Entity<ProductVariant>()

@@ -14,11 +14,13 @@ export interface Product {
   description: string;
   basePrice: number;
   isFeatured: boolean;
+  sizeChartImage?: string;
   categoryId: string;
   brandId: string;
   variants: ProductVariant[];
   images: ProductImage[];
   category?: Category;
+  categories?: Category[];
 }
 
 export interface ProductVariant {
@@ -33,6 +35,7 @@ export interface ProductVariant {
 export interface ProductImage {
   id: string;
   url: string;
+  thumbnailUrl?: string;
   isMain: boolean;
 }
 

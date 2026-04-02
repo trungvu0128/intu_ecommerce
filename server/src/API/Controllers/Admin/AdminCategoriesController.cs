@@ -1,4 +1,5 @@
 using LotusEcommerce.Application.DTOs;
+using LotusEcommerce.Application.Interfaces;
 using LotusEcommerce.Domain.Entities;
 using LotusEcommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -12,10 +13,11 @@ namespace LotusEcommerce.API.Controllers.Admin;
 public class AdminCategoriesController : BaseApiController
 {
     private readonly AppDbContext _context;
-
-    public AdminCategoriesController(AppDbContext context)
+    private readonly IImageService _imageService;
+    public AdminCategoriesController(AppDbContext context, IImageService imageService)
     {
         _context = context;
+        _imageService = imageService;
     }
 
     [HttpGet]
@@ -23,7 +25,7 @@ public class AdminCategoriesController : BaseApiController
     {
         var categories = await _context.Categories
             .Include(c => c.Parent)
-            .Include(c => c.Products)
+            .Include(c => c.ProductCategories)
             .OrderBy(c => c.Name)
             .Select(c => new CategoryAdminDto
             {
@@ -35,7 +37,7 @@ public class AdminCategoriesController : BaseApiController
                 IsActive = c.IsActive,
                 ParentId = c.ParentId,
                 ParentName = c.Parent != null ? c.Parent.Name : null,
-                ProductCount = c.Products.Count,
+                ProductCount = c.ProductCategories.Count,
                 CreatedAt = c.CreatedAt,
             })
             .ToListAsync();
@@ -48,7 +50,9 @@ public class AdminCategoriesController : BaseApiController
     {
         var c = await _context.Categories
             .Include(c => c.Parent)
-            .Include(c => c.Products)
+            .Include(c => c.ProductCategories)
+                .ThenInclude(pc => pc.Product)
+                    .ThenInclude(p => p.Images)
             .FirstOrDefaultAsync(c => c.Id == id);
 
         if (c == null) return NotFoundResponse("Category not found");
@@ -63,8 +67,23 @@ public class AdminCategoriesController : BaseApiController
             IsActive = c.IsActive,
             ParentId = c.ParentId,
             ParentName = c.Parent?.Name,
-            ProductCount = c.Products.Count,
+            ProductCount = c.ProductCategories.Count,
             CreatedAt = c.CreatedAt,
+            Products = c.ProductCategories.Select(pc => new CategoryProductDto
+            {
+                Id = pc.Product.Id,
+                Name = pc.Product.Name,
+                Slug = pc.Product.Slug,
+                BasePrice = pc.Product.BasePrice,
+                MainImageUrl = _imageService.GetPublicUrlAsync(
+                    pc.Product.Images
+                        .Where(img => img.IsMain)
+                        .Select(img => img.ThumbnailUrl ?? img.Url)
+                        .FirstOrDefault()
+                        ?? pc.Product.Images.Select(img => img.ThumbnailUrl ?? img.Url).FirstOrDefault() ?? string.Empty
+                ).Result,
+                IsActive = pc.Product.IsActive,
+            }).ToList(),
         });
     }
 
@@ -109,6 +128,30 @@ public class AdminCategoriesController : BaseApiController
         if (cat == null) return NotFoundResponse("Category not found");
 
         _context.Categories.Remove(cat);
+        await _context.SaveChangesAsync();
+        return NoContentResponse();
+    }
+
+    [HttpPost("{id}/products")]
+    public async Task<IActionResult> UpdateProducts(Guid id, [FromBody] List<Guid> productIds)
+    {
+        var category = await _context.Categories
+            .Include(c => c.ProductCategories)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (category == null) return NotFoundResponse("Category not found");
+
+        _context.ProductCategories.RemoveRange(category.ProductCategories);
+
+        foreach (var pId in productIds)
+        {
+            category.ProductCategories.Add(new ProductCategory
+            {
+                CategoryId = id,
+                ProductId = pId
+            });
+        }
+
         await _context.SaveChangesAsync();
         return NoContentResponse();
     }

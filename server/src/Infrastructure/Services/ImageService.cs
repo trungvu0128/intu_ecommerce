@@ -59,7 +59,7 @@ public class ImageService : IImageService
             await image.SaveAsync(mainOutput, encoder);
             mainOutput.Position = 0;
             await UploadToMinIOAsync(mainKey, mainOutput, "image/webp");
-            result.OriginalUrl = GetPublicUrl(mainKey);
+            result.OriginalUrl = await GetPublicUrlAsync(mainKey);
 
             var thumbWidth = Math.Max(1, image.Width / 2);
             var thumbHeight = Math.Max(1, image.Height / 2);
@@ -69,7 +69,7 @@ public class ImageService : IImageService
             await thumbImage.SaveAsync(thumbOutput, encoder);
             thumbOutput.Position = 0;
             await UploadToMinIOAsync(thumbKey, thumbOutput, "image/webp");
-            result.ThumbnailUrl = GetPublicUrl(thumbKey);
+            result.ThumbnailUrl = await GetPublicUrlAsync(thumbKey);
 
             _logger.LogInformation("Successfully uploaded image: {FileId}", fileId);
             return result;
@@ -134,8 +134,13 @@ public class ImageService : IImageService
         });
     }
 
-    private string GetPublicUrl(string key)
+    public Task<string> GetPublicUrlAsync(string key)
     {
-        return $"{_s3Options.PublicUrl}/{key}";
+        if (Uri.TryCreate(key, UriKind.Absolute, out _))
+            return Task.FromResult(key);
+
+        var endpoint = _s3Options.Endpoint.TrimEnd('/');
+        var url = $"{endpoint}/{_s3Options.BucketName}/{key}";
+        return Task.FromResult(url);
     } 
 }

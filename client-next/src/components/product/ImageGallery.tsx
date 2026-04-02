@@ -40,20 +40,23 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
   return (
     <>
       {/* ═══ MOBILE: Swipeable gallery with dots (hidden on desktop) ═══ */}
-      <div className="md:hidden w-full">
+      <div className="md:hidden w-full bg-white">
         <div
           ref={scrollContainerRef}
-          className="flex overflow-x-auto snap-x-mandatory hide-scrollbar"
+          className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {images.map((img, index) => (
             <div
               key={index}
-              className="w-full shrink-0 snap-start bg-zinc-100 aspect-[3/4] flex items-center justify-center"
+              className="w-full shrink-0 snap-start bg-white flex items-center justify-center"
+              style={{ minWidth: '100%' }}
             >
               <img
                 src={img}
                 alt={`Product view ${index + 1}`}
-                className="w-full h-full object-contain mix-blend-multiply"
+                className="w-full h-auto object-contain"
+                style={{ maxHeight: '70vh' }}
               />
             </div>
           ))}

@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { ChevronLeft, Share2, Heart, Minus, Plus, ShoppingBag, X } from 'lucide-react';
 import MobileLayout from '@/components/mobile/MobileLayout';
 import { ProductService } from '@/lib/api';
+import { getImageUrl, getMainThumbnailUrl, getHoverImageUrl } from '@/lib/image-utils';
 import { useCartStore } from '@/store/useCartStore';
 import type { Product, ProductVariant } from '@/types';
-import Image from 'next/image';
+import ProductCard from '@/components/home/ProductCard';
 import { cn } from '@/lib/utils';
 
 export default function MobileProductDetail({ slug }: { slug: string }) {
@@ -19,9 +20,11 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   const [selectedColor, setSelectedColor] = useState('');
   const [activeTab, setActiveTab] = useState('DETAILS');
   const [addedToast, setAddedToast] = useState(false);
+  const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [showShareSheet, setShowShareSheet] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   
   const addItem = useCartStore(s => s.addItem);
   const router = useRouter();
@@ -38,6 +41,16 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
           const v = data.variants[0];
           setSelectedSize(v.size);
           setSelectedColor(v.color);
+        }
+        
+        // Fetch related products
+        try {
+          const categoryId = data?.category?.id || data?.categories?.[0]?.id || data?.categoryId;
+          const relatedResponse = await ProductService.getAll({ categoryId, pageSize: 8 });
+          const productsList = Array.isArray(relatedResponse) ? relatedResponse : (relatedResponse as any).items || [];
+          setRelatedProducts(productsList.filter((p: any) => p.id !== data.id).slice(0, 4));
+        } catch (relatedError) {
+          console.error('Failed to fetch related products:', relatedError);
         }
       } catch (error) {
         console.error('Failed to fetch product:', error);
@@ -81,11 +94,11 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
   }
 
   const images = product.images?.length > 0
-    ? product.images.sort((a, b) => (b.isMain ? 1 : 0) - (a.isMain ? 1 : 0)).map(i => i.url)
+    ? product.images.sort((a, b) => (b.isMain ? 1 : 0) - (a.isMain ? 1 : 0)).map(i => getImageUrl(i))
     : [''];
 
-  const sizes = [...new Set(product.variants?.map(v => v.size) || [])];
-  const colors = [...new Set(product.variants?.map(v => v.color) || [])];
+  const sizes = [...new Set(product.variants?.map(v => v.size).filter(s => s && s.trim()) || [])];
+  const colors = [...new Set(product.variants?.map(v => v.color).filter(c => c && c.trim()) || [])];
 
   const selectedVariant = product.variants?.find(
     v => v.size === selectedSize && v.color === selectedColor
@@ -136,13 +149,10 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
           <div className="relative">
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-zinc-50">
               {images[currentImage] ? (
-                <Image
+                <img
                   src={images[currentImage]}
                   alt={product.name}
-                  fill
-                  className="object-cover"
-                  priority
-                  sizes="100vw"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-zinc-400 text-xs tracking-wider">
@@ -191,12 +201,10 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
                       i === currentImage ? "border-black scale-105" : "border-transparent opacity-60"
                     )}
                   >
-                    <Image
+                    <img
                       src={img}
                       alt={`${product.name} ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="64px"
+                      className="w-full h-full object-cover"
                     />
                   </button>
                 ))}
@@ -240,9 +248,19 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
 
             {sizes.length > 0 && (
               <div>
-                <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider">
-                  Size: <span className="text-black">{selectedSize || 'Select'}</span>
-                </p>
+                <div className="flex justify-between items-center mb-3">
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                    Size: <span className="text-black">{selectedSize || 'Select'}</span>
+                  </p>
+                  {!!product.sizeChartImage && (
+                    <button 
+                      onClick={() => setIsSizeChartOpen(true)}
+                      className="text-[10px] tracking-widest underline underline-offset-4 text-black hover:opacity-60"
+                    >
+                      Size Chart
+                    </button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2">
                   {sizes.map(size => {
                     const available = product.variants?.some(
@@ -331,9 +349,37 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
               </div>
             </div>
           </div>
+          
+          {/* Related Products Section */}
+          {relatedProducts.length > 0 && (
+            <div className="py-12 bg-white border-t border-zinc-100">
+              <h2 className="text-xs tracking-[0.2em] font-bold uppercase text-center mb-8">
+                YOU MAY ALSO LIKE
+              </h2>
+              <div className="grid grid-cols-2 gap-x-0 gap-y-6">
+                {relatedProducts.map((relProduct) => {
+                  const relMainImageURL = getMainThumbnailUrl(relProduct.images);
+                  const relHoverImageURL = getHoverImageUrl(relProduct.images);
+                  return (
+                    <ProductCard
+                      key={relProduct.id}
+                      id={relProduct.id}
+                      slug={relProduct.slug}
+                      image={relMainImageURL}
+                      image2={relHoverImageURL}
+                      name={relProduct.name}
+                      price={`${new Intl.NumberFormat('vi-VN').format(relProduct.basePrice)} VND`}
+                      imageContainerClassName="bg-[#f5f5f5] aspect-[3/4]"
+                      textAlign="left"
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 px-4 py-4 pb-safe z-50 shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-zinc-100 px-4 py-4 pb-safe z-[90] shadow-lg">
           <div className="flex gap-3">
             <button
               onClick={handleAddToCart}
@@ -388,6 +434,23 @@ export default function MobileProductDetail({ slug }: { slug: string }) {
                     <span className="text-[10px] font-medium text-zinc-600">{item.label}</span>
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Size Chart Modal */}
+        {isSizeChartOpen && !!product.sizeChartImage && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-all" onClick={() => setIsSizeChartOpen(false)}>
+            <div className="relative w-full max-w-sm bg-white p-2 rounded-xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+              <button 
+                className="absolute -top-12 right-0 bg-white/20 p-2 rounded-full text-white hover:bg-white/40 transition-colors" 
+                onClick={() => setIsSizeChartOpen(false)}
+              >
+                <X size={20} />
+              </button>
+              <div className="flex flex-col items-center">
+                <img src={product.sizeChartImage} alt="Size Chart" className="w-full h-auto object-contain rounded-lg max-h-[80vh]" />
               </div>
             </div>
           </div>

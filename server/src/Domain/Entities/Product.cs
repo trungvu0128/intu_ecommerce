@@ -8,7 +8,9 @@ public class Product : BaseEntity
     public decimal BasePrice { get; set; }
     public bool IsFeatured { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? SizeChartImage { get; set; } = string.Empty;
 
+    // Primary category (kept for backward compatibility)
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;
 
@@ -17,4 +19,8 @@ public class Product : BaseEntity
 
     public List<ProductVariant> Variants { get; set; } = new();
     public List<ProductImage> Images { get; set; } = new();
+
+    // Many-to-many categories
+    public List<ProductCategory> ProductCategories { get; set; } = new();
 }
+

@@ -4,7 +4,7 @@ import Modal from '@/components/Modal';
 import { AdminService } from '@/lib/adminApi';
 import ImageUploader from '@/components/ImageUploader';
 import type { FeaturedSection, CreateFeaturedSectionRequest, CreateFeaturedSectionItemRequest, AdminCategory } from '@/types/admin';
-import type { Product } from '@/types';
+import type { Product, ProductImage } from '@/types';
 
 const GRID_OPTIONS = [
   { value: 1, label: '1 Column', desc: 'Full width' },
@@ -87,8 +87,21 @@ export default function FeaturedSectionsPage() {
     setModal(true);
   };
 
-  const openEdit = (s: FeaturedSection) => {
+  const openEdit = async (s: FeaturedSection) => {
     setEditing(s);
+    const initialItems = s.type === 'Manual' ? s.items.map(i => ({
+      productId: i.productId,
+      overlayText: i.overlayText ?? '',
+      linkUrl: i.linkUrl ?? '',
+      imageUrl: i.imageUrl ?? '',
+      displayOrder: i.displayOrder,
+      // Keep for display
+      _productName: i.productName,
+      _productImage: i.productImage,
+      _productPrice: i.productPrice,
+      _productImages: [] as ProductImage[],
+    } as any)) : [];
+
     setForm({
       title: s.title,
       subtitle: s.subtitle ?? '',
@@ -97,21 +110,35 @@ export default function FeaturedSectionsPage() {
       gridColumns: s.gridColumns,
       displayOrder: s.displayOrder,
       isActive: s.isActive,
-      items: s.type === 'Manual' ? s.items.map(i => ({
-        productId: i.productId,
-        overlayText: i.overlayText ?? '',
-        linkUrl: i.linkUrl ?? '',
-        imageUrl: i.imageUrl ?? '',
-        displayOrder: i.displayOrder,
-        // Keep for display
-        _productName: i.productName,
-        _productImage: i.productImage,
-        _productPrice: i.productPrice,
-      } as any)) : [],
+      items: initialItems,
     });
     setProductSearch('');
     setProducts([]);
     setModal(true);
+
+    // Fetch product images for each item in parallel
+    if (s.type === 'Manual' && s.items.length > 0) {
+      const productDetails = await Promise.allSettled(
+        s.items.map(i => AdminService.getProductById(i.productId))
+      );
+
+      setForm(f => ({
+        ...f,
+        items: f.items.map((item: any, idx: number) => {
+          const result = productDetails[idx];
+          if (result.status === 'fulfilled' && result.value) {
+            const product = result.value;
+            return {
+              ...item,
+              _productImages: product.images || [],
+              // If no imageUrl was set, default to main image
+              _productImage: item._productImage || product.images?.find((img: ProductImage) => img.isMain)?.url || product.images?.[0]?.url || '',
+            };
+          }
+          return item;
+        }),
+      }));
+    }
   };
 
   const handleSave = async () => {
@@ -143,15 +170,16 @@ export default function FeaturedSectionsPage() {
 
     const mainImage = product.images?.find(img => img.isMain)?.url || product.images?.[0]?.url || '';
 
-    const newItem: CreateFeaturedSectionItemRequest & { _productName?: string; _productImage?: string; _productPrice?: number } = {
+    const newItem: CreateFeaturedSectionItemRequest & { _productName?: string; _productImage?: string; _productPrice?: number; _productImages?: ProductImage[] } = {
       productId: product.id,
       overlayText: '',
       linkUrl: `/product/${product.slug || product.id}`,
-      imageUrl: '',
+      imageUrl: mainImage,
       displayOrder: form.items.length,
       _productName: product.name,
       _productImage: mainImage,
       _productPrice: product.basePrice,
+      _productImages: product.images || [],
     };
 
     setForm(f => ({ ...f, items: [...f.items, newItem] }));
@@ -503,34 +531,101 @@ export default function FeaturedSectionsPage() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {form.items.map((item: any, index: number) => (
-                    <div
-                      key={item.productId}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        padding: '12px 14px',
-                        background: 'var(--admin-surface-2)',
-                        border: '1px solid var(--admin-border)',
-                        borderRadius: 'var(--admin-radius-sm)',
-                        flexWrap: 'wrap'
-                      }}
-                    >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', background: 'var(--admin-surface-2)', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-sm)' }}>
                       <GripVertical size={16} style={{ color: 'var(--admin-text-muted)', flexShrink: 0 }} />
+                      
+                      {/* Current selected image */}
                       <img
-                        src={item._productImage || item.imageUrl || ''}
+                        src={item.imageUrl || item._productImage || ''}
                         alt={item._productName}
                         style={{
-                          width: 40, height: 40, objectFit: 'cover',
-                          borderRadius: 6, border: '1px solid var(--admin-border)',
+                          width: 48, height: 48, objectFit: 'cover',
+                          borderRadius: 6, border: '2px solid var(--admin-accent)',
                           background: 'var(--admin-surface-3)',
                           flexShrink: 0,
                         }}
                       />
+
                       <div style={{ flex: 1, minWidth: 100 }}>
                         <div style={{ fontSize: 13, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {item._productName ?? 'Product'}
                         </div>
+                        
+                        {/* Image selection thumbnails */}
+                        {(item._productImages?.length > 0) && (
+                          <div style={{ display: 'flex', gap: 4, marginTop: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                            {item._productImages.map((img: ProductImage, imgIdx: number) => {
+                              const imgUrl = img.url || img.thumbnailUrl || '';
+                              const isSelected = item.imageUrl === imgUrl;
+                              return (
+                                <button
+                                  key={imgIdx}
+                                  type="button"
+                                  onClick={() => updateItem(index, 'imageUrl', imgUrl)}
+                                  title={img.isMain ? 'Main image' : `Image ${imgIdx + 1}`}
+                                  style={{
+                                    width: 32, height: 32, padding: 0,
+                                    border: isSelected ? '2px solid var(--admin-accent)' : '1px solid var(--admin-border)',
+                                    borderRadius: 4,
+                                    overflow: 'hidden',
+                                    cursor: 'pointer',
+                                    background: 'var(--admin-surface-3)',
+                                    opacity: isSelected ? 1 : 0.6,
+                                    transition: 'all 0.15s',
+                                    flexShrink: 0,
+                                    position: 'relative',
+                                  }}
+                                  onMouseOver={e => { e.currentTarget.style.opacity = '1'; }}
+                                  onMouseOut={e => { if (!isSelected) e.currentTarget.style.opacity = '0.6'; }}
+                                >
+                                  <img src={img.thumbnailUrl || imgUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </button>
+                              );
+                            })}
+                            
+                            {/* Upload custom image button */}
+                            <div style={{ position: 'relative' }}>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                id={`upload-featured-${index}`}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  try {
+                                    const result = await AdminService.uploadImage(file, 'featured');
+                                    const url = typeof result === 'string' ? result : result.originalUrl;
+                                    updateItem(index, 'imageUrl', url);
+                                  } catch (err) {
+                                    console.error('Upload failed:', err);
+                                  }
+                                  e.target.value = '';
+                                }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => document.getElementById(`upload-featured-${index}`)?.click()}
+                                title="Upload custom image"
+                                style={{
+                                  width: 32, height: 32, padding: 0,
+                                  border: '1px dashed var(--admin-border)',
+                                  borderRadius: 4,
+                                  background: 'var(--admin-surface-2)',
+                                  cursor: 'pointer',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  color: 'var(--admin-text-muted)',
+                                  fontSize: 16,
+                                  transition: 'all 0.15s',
+                                }}
+                                onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--admin-accent)'; e.currentTarget.style.color = 'var(--admin-accent)'; }}
+                                onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--admin-border)'; e.currentTarget.style.color = 'var(--admin-text-muted)'; }}
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <input
@@ -540,15 +635,6 @@ export default function FeaturedSectionsPage() {
                         value={item.overlayText ?? ''}
                         onChange={e => updateItem(index, 'overlayText', e.target.value)}
                       />
-
-                      <div style={{ width: 140 }}>
-                        <ImageUploader 
-                          value={item.imageUrl ?? ''} 
-                          onChange={(url: string) => updateItem(index, 'imageUrl', url)} 
-                          folder="featured"
-                          placeholder="Custom image URL"
-                        />
-                      </div>
 
                       <button
                         type="button"

@@ -18,6 +18,8 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
+            .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
             .Include(p => p.Variants)
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == id);
@@ -27,6 +29,8 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
+            .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
             .Include(p => p.Variants)
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Slug == slug);
@@ -36,13 +40,17 @@ public class ProductRepository : IProductRepository
     {
         var query = _context.Products
             .Include(p => p.Category)
+            .Include(p => p.ProductCategories)
+                .ThenInclude(pc => pc.Category)
             .Include(p => p.Images)
+            .Include(p => p.Variants)
             .AsQueryable();
 
         if (!isAdmin)
         {
             query = query.Where(p => p.IsActive);
-            query = query.Where(p => p.Category == null || p.Category.IsActive);
+            // Ignore deprecated Category property, use ProductCategories for active check
+            query = query.Where(p => !p.ProductCategories.Any() || p.ProductCategories.Any(pc => pc.Category.IsActive));
         }
 
         if (!string.IsNullOrWhiteSpace(search))
@@ -53,7 +61,8 @@ public class ProductRepository : IProductRepository
 
         if (categoryId.HasValue)
         {
-            query = query.Where(p => p.CategoryId == categoryId.Value);
+            query = query.Where(p => p.CategoryId == categoryId.Value
+                || p.ProductCategories.Any(pc => pc.CategoryId == categoryId.Value));
         }
 
         if (isFeatured.HasValue)

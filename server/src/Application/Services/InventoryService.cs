@@ -11,15 +11,18 @@ public class InventoryService : IInventoryService
     private readonly IProductRepository _productRepository;
     private readonly IInventoryTransactionRepository _transactionRepository;
     private readonly IInventoryReasonRepository _reasonRepository;
+    private readonly IImageService _imageService;
 
     public InventoryService(
         IProductRepository productRepository,
         IInventoryTransactionRepository transactionRepository,
-        IInventoryReasonRepository reasonRepository)
+        IInventoryReasonRepository reasonRepository,
+        IImageService imageService)
     {
         _productRepository = productRepository;
         _transactionRepository = transactionRepository;
         _reasonRepository = reasonRepository;
+        _imageService = imageService;
     }
 
     // ─── Existing ────────────────────────────────────────────────────────────────
@@ -38,7 +41,7 @@ public class InventoryService : IInventoryService
                     ProductId = p.Id,
                     ProductName = p.Name,
                     ProductSlug = p.Slug,
-                    ProductImage = mainImage?.Url,
+                    ProductImage = _imageService.GetPublicUrlAsync(mainImage?.Url ?? string.Empty).Result,
                     Sku = v.Sku,
                     Color = v.Color,
                     Size = v.Size,
