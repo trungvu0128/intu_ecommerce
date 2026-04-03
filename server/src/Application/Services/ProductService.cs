@@ -17,8 +17,7 @@ public class ProductService : IProductService
     private readonly IProductImageRepository _productImageRepository;
     private readonly IProductVariantRepository _productVariantRepository;
     private readonly IImageService _imageService;
-    private readonly IProductCategoryRepository _productCategoryRepository;
-    public ProductService(IProductRepository repository, IDistributedCache cache, ISearchService searchService, IProductImageRepository productImageRepository, IProductVariantRepository productVariantRepository, IImageService imageService, IProductCategoryRepository productCategoryRepository)
+    public ProductService(IProductRepository repository, IDistributedCache cache, ISearchService searchService, IProductImageRepository productImageRepository, IProductVariantRepository productVariantRepository, IImageService imageService)
     {
         _repository = repository;
         _cache = cache;
@@ -26,7 +25,6 @@ public class ProductService : IProductService
         _productImageRepository = productImageRepository;
         _productVariantRepository = productVariantRepository;
         _imageService = imageService;
-        _productCategoryRepository = productCategoryRepository;
     }
 
 
@@ -137,10 +135,10 @@ public class ProductService : IProductService
         product.UpdatedAt = DateTime.UtcNow;
 
         // Replace product-category M2M entries
-        _productCategoryRepository.RemoveRange(product.ProductCategories);
+        product.ProductCategories.Clear();
         foreach (var cId in categoryIds)
         {
-            await _productCategoryRepository.AddAsync( new ProductCategory
+            product.ProductCategories.Add(new ProductCategory
             {
                 ProductId = product.Id,
                 CategoryId = cId
@@ -154,7 +152,7 @@ public class ProductService : IProductService
 
             foreach (var variant in variantsToRemove)
             {
-                _productVariantRepository.Delete(variant);
+                product.Variants.Remove(variant);
             }
 
             foreach (var variantDto in dto.Variants)
@@ -173,14 +171,13 @@ public class ProductService : IProductService
                 }
                 else
                 {
-                    await _productVariantRepository.AddAsync(new ProductVariant
+                    product.Variants.Add(new ProductVariant
                     {
                         Sku = variantDto.Sku,
                         Color = variantDto.Color,
                         Size = variantDto.Size,
                         PriceAdjustment = variantDto.PriceAdjustment,
-                        StockQuantity = variantDto.StockQuantity,
-                        ProductId = product.Id
+                        StockQuantity = variantDto.StockQuantity
                     });
                 }
             }
@@ -325,8 +322,7 @@ public class ProductService : IProductService
                 Name = p.Category.Name,
                 Slug = p.Category.Slug,
                 Description = p.Category.Description,
-                ImageUrl = p.Category.ImageUrl,
-                IsActive = p.Category.IsActive
+                ImageUrl = p.Category.ImageUrl
             } : null!,
             Categories = p.ProductCategories?.Select(pc => new CategoryDto
             {
@@ -334,8 +330,7 @@ public class ProductService : IProductService
                 Name = pc.Category.Name,
                 Slug = pc.Category.Slug,
                 Description = pc.Category.Description,
-                ImageUrl = pc.Category.ImageUrl,
-                IsActive = pc.Category.IsActive
+                ImageUrl = pc.Category.ImageUrl
             }).ToList() ?? new List<CategoryDto>(),
             Variants = p.Variants.Select(v => new ProductVariantDto
             {

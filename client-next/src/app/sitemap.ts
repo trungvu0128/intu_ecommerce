@@ -1,19 +1,34 @@
 import { MetadataRoute } from 'next';
-import { ProductService } from '@/lib/api';
+import { ProductService, CategoryService } from '@/lib/api';
+
+export const revalidate = 3600; // revalidate every hour
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://intuoo.com';
 
+  let categories: any[] = [];
   let products: any[] = [];
   try {
-    products = await ProductService.getAll({ pageSize: 1000 }) || [];
+    const [productsRes, categoriesRes] = await Promise.all([
+      ProductService.getAll({ pageSize: 1000 }),
+      CategoryService.getAll()
+    ]);
+    products = productsRes || [];
+    categories = categoriesRes || [];
   } catch (error) {
-    console.error('Failed to fetch products for sitemap:', error);
+    console.error('Failed to fetch data for sitemap:', error);
   }
 
   const productEntries: MetadataRoute.Sitemap = products.map((product) => ({
     url: `${baseUrl}/product/${product.slug || product.id}`,
     lastModified: product.updatedAt ? new Date(product.updatedAt) : new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  const categoryEntries: MetadataRoute.Sitemap = categories.map((category) => ({
+    url: `${baseUrl}/category/${category.slug || category.id}`,
+    lastModified: category.updatedAt ? new Date(category.updatedAt) : new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   }));
@@ -49,6 +64,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
+    ...categoryEntries,
     ...productEntries,
   ];
 }
