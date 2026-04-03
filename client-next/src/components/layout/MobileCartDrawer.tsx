@@ -136,12 +136,11 @@ const MobileCartDrawer = ({ isOpen, onClose }: MobileCartDrawerProps) => {
                             if (item.slug) router.push(`/product/${item.slug}`);
                           }}
                         >
-                          <Image
+                          <img
                             src={item.image}
                             alt={item.name}
-                            fill
-                            className="object-cover"
-                            sizes="96px"
+                            className="w-full h-full object-cover"
+                            loading="lazy"
                           />
                         </div>
 

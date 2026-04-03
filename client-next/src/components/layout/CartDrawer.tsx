@@ -98,23 +98,21 @@ const CartDrawer = ({ isOpen, onClose }: CartDrawerProps) => {
                   <div key={item.id} className="flex gap-4 md:gap-6 shrink-0 min-w-[280px] md:min-w-[400px] max-w-[500px]">
                     {/* Product Image */}
                     <div className="group relative w-[140px] h-[180px] md:w-[220px] md:h-[260px] bg-[#F2F2F2] shrink-0 overflow-hidden cursor-pointer">
-                      <Image
+                      <img
                         src={item.image}
                         alt={item.name}
-                        fill
                         className={cn(
-                          "object-cover transition-all duration-700 ease-in-out group-hover:scale-105",
+                          "w-full h-full object-cover transition-all duration-700 ease-in-out group-hover:scale-105",
                           item.image2 && "group-hover:opacity-0"
                         )}
-                        sizes="(max-width: 768px) 200px, 220px"
+                        loading="lazy"
                       />
                       {item.image2 && (
-                        <Image
+                        <img
                           src={item.image2}
                           alt={`${item.name} secondary view`}
-                          fill
-                          className="object-cover opacity-0 group-hover:opacity-100 transition-all duration-700 ease-in-out scale-110 group-hover:scale-105"
-                          sizes="(max-width: 768px) 200px, 220px"
+                          className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-all duration-700 ease-in-out scale-110 group-hover:scale-105"
+                          loading="lazy"
                         />
                       )}
                     </div>
