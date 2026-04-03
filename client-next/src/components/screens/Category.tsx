@@ -78,15 +78,23 @@ const Category = ({ slug = [] }: CategoryProps) => {
     console.log("DEBUG Category:", { categorySegments, isShopAll });
 
     if (isShopAll) {
-      const allHeroImages = activeCategories
-        .map(cat => cat.imageUrl)
-        .filter((url): url is string => !!url); // Extract valid images from all categories
+      // Lấy category có isActive = true và có bannerImages
+      const activeCategoryWithBanners = activeCategories.find(
+        cat => cat.isActive === true && cat.bannerImages && cat.bannerImages.length > 0
+      );
+
+      // Nếu có category với bannerImages, dùng nó; nếu không, fallback về imageUrl của các category
+      const heroImages = activeCategoryWithBanners 
+        ? activeCategoryWithBanners.bannerImages
+        : activeCategories
+            .map(cat => cat.imageUrl)
+            .filter((url): url is string => !!url);
 
       return [{
         categoryId: null, // null means all products
-        category: 'Shop',
-        collectionName: 'ALL PRODUCTS',
-        heroImages: allHeroImages, // Passing all images creates the slider (slicer banner)
+        category: activeCategoryWithBanners?.name || 'Shop',
+        collectionName: activeCategoryWithBanners?.description || 'ALL PRODUCTS',
+        heroImages: heroImages,
         filter: null
       }];
     }

@@ -21,22 +21,20 @@ const CategoryHero = ({ images }: CategoryHeroProps) => {
   }, [images.length]);
 
   return (
-    <div className="relative w-full bg-zinc-100 overflow-hidden group">
+    <div className="relative w-full bg-zinc-100 overflow-hidden group aspect-[16/9] md:aspect-[21/9]">
       {/* Slides */}
       {images.map((img, index) => (
         <div
           key={index}
           className={cn(
-            "transition-opacity duration-1000 ease-in-out w-full",
-            index === 0 ? "relative" : "absolute inset-0 h-full",
-            index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0",
-            index === 0 && index !== currentIndex ? "invisible" : ""
+            "absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out",
+            index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0"
           )}
         >
           <img
             src={img}
             alt={`Category Slide ${index + 1}`}
-            className="w-full h-auto block object-cover"
+            className="w-full h-full object-cover"
           />
         </div>
       ))}
