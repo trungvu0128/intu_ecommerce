@@ -109,13 +109,11 @@ const Navbar = () => {
           "flex-1 flex justify-center pointer-events-auto"
         )}>
           <Link href="/">
-            <img 
-              src={isHome ? logoWhite.src : logoBlack.src} 
+            <Image 
+              src={isHome ? logoWhite : logoBlack} 
               alt="INTU" 
-              width={logoWhite.width}
-              height={logoWhite.height}
               className={cn("h-[25px] w-auto", isHome && "mix-blend-difference")} 
-              fetchPriority="high"
+              priority
             />
           </Link>
         </div>
