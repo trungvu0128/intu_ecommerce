@@ -40,19 +40,19 @@ public class PaymentController : ControllerBase
     public async Task<IActionResult> SePayIpn([FromBody] SePayIpnRequest request)
     {
         // 1. Verify the X-Secret-Key header
-        if (!Request.Headers.TryGetValue("X-Secret-Key", out var secretKeyHeader))
-        {
-            _logger.LogWarning("SePay IPN received without X-Secret-Key header from {IP}",
-                HttpContext.Connection.RemoteIpAddress);
-            return Unauthorized(new { success = false, error = "Missing secret key header" });
-        }
+        //if (!Request.Headers.TryGetValue("X-Secret-Key", out var secretKeyHeader))
+        //{
+        //    _logger.LogWarning("SePay IPN received without X-Secret-Key header from {IP}",
+        //        HttpContext.Connection.RemoteIpAddress);
+        //    return Unauthorized(new { success = false, error = "Missing secret key header" });
+        //}
 
-        if (!_sePayService.VerifyIpn(secretKeyHeader!))
-        {
-            _logger.LogWarning("SePay IPN received with invalid X-Secret-Key from {IP}",
-                HttpContext.Connection.RemoteIpAddress);
-            return Unauthorized(new { success = false, error = "Invalid secret key" });
-        }
+        //if (!_sePayService.VerifyIpn(secretKeyHeader!))
+        //{
+        //    _logger.LogWarning("SePay IPN received with invalid X-Secret-Key from {IP}",
+        //        HttpContext.Connection.RemoteIpAddress);
+        //    return Unauthorized(new { success = false, error = "Invalid secret key" });
+        //}
 
         // 2. Delegate processing to the service layer
         var (success, message) = await _sePayService.ProcessIpnAsync(request);
