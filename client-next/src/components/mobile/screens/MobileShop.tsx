@@ -7,6 +7,7 @@ import { SlidersHorizontal, Search } from 'lucide-react';
 import MobileLayout from '@/components/mobile/MobileLayout';
 import { ProductService, CategoryService } from '@/lib/api';
 import { getMainThumbnailUrl } from '@/lib/image-utils';
+import CategoryHero from '@/components/category/CategoryHero';
 import type { Product, Category } from '@/types';
 
 export default function MobileShop() {
@@ -20,6 +21,7 @@ export default function MobileShop() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [showFilter, setShowFilter] = useState(false);
+  const [heroImages, setHeroImages] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,8 +30,18 @@ export default function MobileShop() {
           ProductService.getAll({ pageSize: 50 }),
           CategoryService.getAll().catch(() => []),
         ]);
-        setProducts(productsData.filter(p => p.isActive !== false));
-        setCategories(categoriesData.filter(c => c.isActive !== false));
+        const activeProducts = productsData.filter(p => p.isActive !== false);
+        const activeCategories = categoriesData.filter(c => c.isActive !== false);
+        setProducts(activeProducts);
+        setCategories(activeCategories);
+
+        // Lấy bannerImages từ category có isActive = true
+        const activeCategoryWithBanners = activeCategories.find(
+          cat => cat.isActive === true && cat.bannerImages && cat.bannerImages.length > 0
+        );
+        if (activeCategoryWithBanners?.bannerImages) {
+          setHeroImages(activeCategoryWithBanners.bannerImages);
+        }
       } catch (error) {
         console.error('Failed to fetch products:', error);
       } finally {
@@ -64,6 +76,11 @@ export default function MobileShop() {
 
   return (
     <MobileLayout>
+      {/* Category Hero Banner - hiển thị khi không chọn category cụ thể */}
+      {activeCategory === '' && heroImages.length > 0 && (
+        <CategoryHero images={heroImages} />
+      )}
+
       {/* Search Bar */}
       <div style={{ padding: '12px 16px 0' }}>
         <div className="mobile-search">

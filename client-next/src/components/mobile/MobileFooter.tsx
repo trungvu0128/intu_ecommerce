@@ -6,7 +6,7 @@ import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react';
 import logoBlack from '@/assets/LOGO_black.png';
 
 const LINKS = [
-  { label: 'Shop Shop', href: '/shop' },
+  { label: 'Shop', href: '/shop' },
   { label: 'About Us', href: '/about' },
   { label: 'Contact', href: '/contact' },
   { label: 'Return Policy', href: '#' },
@@ -107,7 +107,7 @@ export default function MobileFooter() {
           gap: 12,
           marginBottom: 28
         }}>
-          <a href="#" 
+          <a href="https://www.instagram.com/intu__oo" target="_blank" rel="noopener noreferrer"
             aria-label="Instagram"
             style={{
               width: 44, 
@@ -124,7 +124,7 @@ export default function MobileFooter() {
             }}>
             <Instagram size={20} strokeWidth={1.5} />
           </a>
-          <a href="#" 
+          <a href="https://www.facebook.com/intuvn" target="_blank" rel="noopener noreferrer"
             aria-label="Facebook"
             style={{
               width: 44, 
