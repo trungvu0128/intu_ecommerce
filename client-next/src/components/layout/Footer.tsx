@@ -14,7 +14,14 @@ const Footer = () => {
           </div>
           <div className="flex flex-col space-y-5">
             <Link href="/" className="w-24 block">
-              <Image src={logoBlack} alt="INTU00" className="w-full h-auto object-contain" />
+              <img 
+                src={logoBlack.src} 
+                alt="INTU00" 
+                width={logoBlack.width} 
+                height={logoBlack.height} 
+                className="w-full h-auto object-contain" 
+                loading="lazy"
+              />
             </Link>
             
             {/* Vietnamese Ministry of Industry and Trade Badge */}
@@ -22,6 +29,8 @@ const Footer = () => {
               <img 
                 src="https://dangkywebvoibocongthuong.com/wp-content/uploads/2021/11/logo-da-thong-bao-bo-cong-thuong.png" 
                 alt="Registered with Vietnam Ministry of Industry and Trade" 
+                width={128}
+                height={48}
                 className="w-full h-auto"
                 loading="lazy"
               />

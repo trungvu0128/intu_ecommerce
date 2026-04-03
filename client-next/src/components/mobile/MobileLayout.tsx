@@ -186,7 +186,14 @@ export function MobileHeader({
     <header className={`mobile-header ${!isVisible ? 'hidden' : ''} ${isScrolled || !isHome ? 'scrolled' : ''}`}>
       {/* Logo — Left */}
       <Link href="/">
-        <Image src={logo} alt="INTU∞" className="mobile-header__logo" priority />
+        <img 
+          src={logo.src} 
+          alt="INTU∞" 
+          width={logo.width}
+          height={logo.height}
+          className="mobile-header__logo" 
+          fetchPriority="high" 
+        />
       </Link>
 
       {/* Icons — Right */}
