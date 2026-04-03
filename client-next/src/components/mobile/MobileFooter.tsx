@@ -25,7 +25,7 @@ export default function MobileFooter() {
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
         <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
           <Link href="/">
-            <Image src={logoBlack} alt="INTU∞" style={{ height: 24, width: 'auto' }} />
+            <img src={logoBlack.src} alt="INTU∞" width={96} height={10} style={{ height: 24, width: 'auto' }} />
           </Link>
         </div>
 
@@ -157,6 +157,8 @@ export default function MobileFooter() {
             <img
               src="https://dangkywebvoibocongthuong.com/wp-content/uploads/2021/11/logo-da-thong-bao-bo-cong-thuong.png"
               alt="Đã thông báo Bộ Công Thương"
+              width={96}
+              height={36}
               style={{ 
                 height: 36, 
                 width: 'auto', 

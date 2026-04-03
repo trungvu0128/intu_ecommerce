@@ -34,6 +34,7 @@ const Hero = () => {
             className="w-full h-full object-cover opacity-80"
           >
             <source src="/assets/test-bg.mp4" type="video/mp4" />
+            <track kind="captions" />
           </video>
         )}
         {/* Overlay */}

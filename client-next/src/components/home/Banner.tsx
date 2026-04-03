@@ -22,7 +22,9 @@ const Banner = ({ image, mediaType, title, className, aspectRatio = "aspect-[16/
           muted
           playsInline
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        >
+          <track kind="captions" />
+        </video>
       ) : (
         <img
           src={image}

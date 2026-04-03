@@ -63,7 +63,9 @@ const FeaturedSection = ({ section }: { section: FeaturedSectionData }) => {
                   src={item.imageUrl || item.productImage || ''} 
                   autoPlay loop muted playsInline
                   className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-                />
+                >
+                  <track kind="captions" />
+                </video>
               ) : (
                 <img 
                   src={item.imageUrl || item.productImage || ''} 

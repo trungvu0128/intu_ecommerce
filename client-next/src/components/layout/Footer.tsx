@@ -17,8 +17,8 @@ const Footer = () => {
               <img 
                 src={logoBlack.src} 
                 alt="INTU00" 
-                width={logoBlack.width} 
-                height={logoBlack.height} 
+                width={96} 
+                height={10} 
                 className="w-full h-auto object-contain" 
                 loading="lazy"
               />
@@ -37,10 +37,10 @@ const Footer = () => {
             </a>
 
             <div className="flex space-x-3 pt-2">
-              <a href="https://www.facebook.com/intuvn" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all duration-300">
+              <a href="https://www.facebook.com/intuvn" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="w-8 h-8 rounded-full border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all duration-300">
                 <Facebook size={16} />
               </a>
-              <a href="https://www.instagram.com/intu__oo" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all duration-300">
+              <a href="https://www.instagram.com/intu__oo" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="w-8 h-8 rounded-full border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all duration-300">
                 <Instagram size={16} />
               </a>
             </div>
