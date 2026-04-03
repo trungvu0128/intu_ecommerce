@@ -1,9 +1,0 @@
-<svg width="32" height="32" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="120" height="120" rx="60" fill="black"/>
-  <path
-    d="M60 60C75 75 95 85 105 75C115 65 105 45 90 45C75 45 65 55 60 60M60 60C45 45 25 35 15 45C5 55 15 75 30 75C45 75 55 65 60 60"
-    stroke="white"
-    stroke-width="8"
-    stroke-linecap="round"
-  />
-</svg>
