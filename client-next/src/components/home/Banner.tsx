@@ -8,9 +8,10 @@ interface BannerProps {
   className?: string;
   aspectRatio?: string;
   link?: string;
+  priority?: boolean;
 }
 
-const Banner = ({ image, mediaType, title, className, aspectRatio = "aspect-[16/9]", link }: BannerProps) => {
+const Banner = ({ image, mediaType, title, className, aspectRatio = "aspect-[16/9]", link, priority = false }: BannerProps) => {
   const content = (
     <>
       {mediaType === 'video' || image.endsWith('.mp4') || image.endsWith('.webm') ? (
@@ -27,7 +28,8 @@ const Banner = ({ image, mediaType, title, className, aspectRatio = "aspect-[16/
           src={image}
           alt={title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          {...(priority ? { fetchPriority: "high" } : {})}
         />
       )}
       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300" />

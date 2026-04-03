@@ -37,10 +37,10 @@ interface FeaturedSectionData {
   }[];
 }
 
-const Home = () => {
+const Home = ({ initialSections = [] }: { initialSections?: FeaturedSectionData[] }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [featuredSections, setFeaturedSections] = useState<FeaturedSectionData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [featuredSections, setFeaturedSections] = useState<FeaturedSectionData[]>(initialSections);
+  const [isLoading, setIsLoading] = useState(initialSections.length === 0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -50,15 +50,22 @@ const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [productsData, sectionsRes] = await Promise.all([
-          ProductService.getAll({ pageSize: 8 }),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7101'}/api/FeaturedSections`)
-            .then(r => r.json())
-            .then(r => Array.isArray(r.data) ? r.data : [])
-            .catch(() => []),
-        ]);
-        setProducts(productsData);
-        setFeaturedSections(Array.isArray(sectionsRes) ? sectionsRes : []);
+        const promises: Promise<any>[] = [ProductService.getAll({ pageSize: 8 })];
+        if (initialSections.length === 0) {
+          promises.push(
+            fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7101'}/api/FeaturedSections`)
+              .then(r => r.json())
+              .then(r => Array.isArray(r.data) ? r.data : [])
+              .catch(() => [])
+          );
+        }
+        
+        const results = await Promise.all(promises);
+        setProducts(results[0]);
+        
+        if (initialSections.length === 0 && results.length > 1) {
+          setFeaturedSections(Array.isArray(results[1]) ? results[1] : []);
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -67,7 +74,7 @@ const Home = () => {
     };
 
     fetchData();
-  }, []);
+  }, [initialSections]);
 
   return (
     <div className="relative min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
@@ -76,7 +83,7 @@ const Home = () => {
         {/* <Hero /> */}
 
         {/* Dynamic Featured Sections from CMS */}
-        {mounted && !isLoading && [...featuredSections].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map(section => {
+        {mounted && !isLoading && [...featuredSections].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map((section, idx) => {
           if (section.type === 'Category') {
             const catProducts = section.items
               .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
@@ -103,6 +110,7 @@ const Home = () => {
                 title={section.title}
                 link={section.linkUrl || undefined}
                 className="w-full h-screen"
+                priority={idx === 0}
                 aspectRatio="auto"
               />
             );
@@ -121,6 +129,7 @@ const Home = () => {
                   title={item.overlayText || item.productName || section.title}
                   link={section.items.length === 1 && !section.mediaUrl ? (item.linkUrl || `/product/${item.productSlug || item.productId}`) : undefined}
                   className="h-[50vh] md:h-[70vh] lg:h-[90vh]"
+                  priority={idx === 0}
                   aspectRatio="auto"
                 />
               );
@@ -138,6 +147,7 @@ const Home = () => {
                     rightImage={right.imageUrl || right.productImage || ''}
                     rightTitle={right.overlayText || right.productName || section.title}
                     rightLink={right.linkUrl || `/product/${right.productSlug || right.productId}`}
+                    priority={idx === 0}
                   />
                 </div>
               );

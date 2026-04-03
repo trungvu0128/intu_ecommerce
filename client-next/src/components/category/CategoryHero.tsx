@@ -35,6 +35,8 @@ const CategoryHero = ({ images }: CategoryHeroProps) => {
             src={img}
             alt={`Category Slide ${index + 1}`}
             className="w-full h-full object-cover"
+            loading={index === 0 ? "eager" : "lazy"}
+            {...(index === 0 ? { fetchPriority: "high" } : {})}
           />
         </div>
       ))}

@@ -32,40 +32,43 @@ interface FeaturedSectionData {
   }[];
 }
 
-export default function MobileHome() {
-  const [featuredSections, setFeaturedSections] = useState<FeaturedSectionData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export default function MobileHome({ initialSections = [] }: { initialSections?: FeaturedSectionData[] }) {
+  const [featuredSections, setFeaturedSections] = useState<FeaturedSectionData[]>(initialSections);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      try {
-        const sectionsRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7101'}/api/FeaturedSections`
-        )
-          .then(r => r.json())
-          .then(r => r.data ?? [])
-          .catch(() => []);
+    if (initialSections.length === 0) {
+      let isMounted = true;
+      setIsLoading(true);
+      const fetchData = async () => {
+        try {
+          const sectionsRes = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7101'}/api/FeaturedSections`
+          )
+            .then(r => r.json())
+            .then(r => r.data ?? [])
+            .catch(() => []);
 
-        if (isMounted) {
-          setFeaturedSections(sectionsRes);
+          if (isMounted) {
+            setFeaturedSections(sectionsRes);
+          }
+        } catch (error) {
+          console.error('Failed to fetch data:', error);
+        } finally {
+          if (isMounted) setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    fetchData();
-    return () => { isMounted = false; };
-  }, []);
+      };
+      fetchData();
+      return () => { isMounted = false; };
+    }
+  }, [initialSections]);
 
   return (
     <MobileLayout heroPage>
 
       {!isLoading && [...featuredSections]
         .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-        .map(section => {
+        .map((section, idx) => {
           if (section.type === 'Category') {
             const catProducts = section.items
               .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
@@ -114,6 +117,7 @@ export default function MobileHome() {
                 title={section.title}
                 link={section.linkUrl || undefined}
                 className="w-full h-screen"
+                priority={idx === 0}
                 aspectRatio="auto"
               />
             );
@@ -132,6 +136,7 @@ export default function MobileHome() {
                   title={item.overlayText || item.productName || section.title}
                   link={item.linkUrl || `/product/${item.productSlug || item.productId}`}
                   className="h-[60vh]"
+                  priority={idx === 0}
                   aspectRatio="auto"
                 />
               );
@@ -148,6 +153,7 @@ export default function MobileHome() {
                     rightImage={right.imageUrl || right.productImage || ''}
                     rightTitle={right.overlayText || right.productName || section.title}
                     rightLink={right.linkUrl || `/product/${right.productSlug || right.productId}`}
+                    priority={idx === 0}
                   />
                 </div>
               );
