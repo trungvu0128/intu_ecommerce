@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -147,7 +147,7 @@ export function MobileHeader({
 }) {
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
   const { getTotalItems } = useCartStore();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
@@ -158,18 +158,25 @@ export function MobileHeader({
   useEffect(() => {
     setIsScrolled(false);
     setIsVisible(true);
+    lastScrollYRef.current = 0;
   }, [pathname]);
 
   useEffect(() => {
+    // Set initial state based on current scroll position (e.g. after fast refresh or back-nav)
+    const initialY = window.scrollY;
+    setIsScrolled(initialY > 20);
+    lastScrollYRef.current = initialY;
+
     const onScroll = () => {
       const y = window.scrollY;
-      setIsVisible(y < lastScrollY || y < 50);
+      const prev = lastScrollYRef.current;
+      setIsVisible(y < prev || y < 50);
       setIsScrolled(y > 20);
-      setLastScrollY(y);
+      lastScrollYRef.current = y;
     };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, [lastScrollY]);
+  }, []);
 
   const isTransparent = isHome && !isScrolled;
   const logo = isTransparent ? logoWhite : logoBlack;

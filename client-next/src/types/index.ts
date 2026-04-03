@@ -38,6 +38,7 @@ export interface Category {
   name: string;
   description: string;
   imageUrl: string;
+  bannerImages?: string[];
   slug?: string;
   isActive?: boolean;
 }

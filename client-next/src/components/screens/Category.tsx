@@ -70,23 +70,39 @@ const Category = ({ slug = [] }: CategoryProps) => {
   const visibleSections = useMemo(() => {
     // Only use active categories
     const activeCategories = categories.filter(c => c.isActive !== false);
-    let baseCategories = activeCategories;
 
-    if (categorySegments.length > 0 && 
-        !categorySegments.includes('shop all') && 
-        !categorySegments.includes('shop-all') &&
-        !categorySegments.includes('shop')) {
-      const matchingCategories = activeCategories.filter(cat => {
-        const catName = cat.name.toLowerCase();
-        return categorySegments.some(seg => catName.includes(seg) || seg.includes(catName));
-      });
-      baseCategories = matchingCategories.length > 0 ? matchingCategories : activeCategories;
+    // Check if it's a "shop all" equivalent route
+    const isShopAll = categorySegments.length === 0 || 
+      categorySegments.some(seg => ['shop', 'shop all', 'shop-all', 'all'].includes(seg));
+
+    console.log("DEBUG Category:", { categorySegments, isShopAll });
+
+    if (isShopAll) {
+      const allHeroImages = activeCategories
+        .map(cat => cat.imageUrl)
+        .filter((url): url is string => !!url); // Extract valid images from all categories
+
+      return [{
+        categoryId: null, // null means all products
+        category: 'Shop',
+        collectionName: 'ALL PRODUCTS',
+        heroImages: allHeroImages, // Passing all images creates the slider (slicer banner)
+        filter: null
+      }];
     }
+
+    // Specific category logic
+    const matchingCategories = activeCategories.filter(cat => {
+      const catName = cat.name.toLowerCase();
+      return categorySegments.some(seg => catName.includes(seg) || seg.includes(catName));
+    });
+
+    const baseCategories = matchingCategories.length > 0 ? matchingCategories : activeCategories;
 
     if (baseCategories.length === 0) {
       return [{
         categoryId: null,
-        category: 'All Products',
+        category: 'Shop',
         collectionName: 'ALL PRODUCTS',
         heroImages: [],
         filter: null

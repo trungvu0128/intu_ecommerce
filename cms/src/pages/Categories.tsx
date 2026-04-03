@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Pencil, Trash2, Tag, X, Package, Eye, ArrowLeft } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag, X, Package, Eye, ArrowLeft, Upload } from 'lucide-react';
 import Modal from '@/components/Modal';
 import { AdminService } from '@/lib/adminApi';
 import ImageUploader from '@/components/ImageUploader';
@@ -13,6 +13,7 @@ const defaultForm: CreateCategoryRequest = {
   slug: '',
   description: '',
   imageUrl: '',
+  bannerImages: [],
   isActive: true,
   parentId: undefined,
 };
@@ -45,6 +46,33 @@ export default function CategoriesPage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [savingProducts, setSavingProducts] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingBanners, setUploadingBanners] = useState(false);
+
+  const handleMultipleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingBanners(true);
+    let newUrls: string[] = [];
+    for (const file of files) {
+      try {
+        const result = await AdminService.uploadImage(file, 'categories/banners');
+        const url = typeof result === 'string' ? result : result.originalUrl;
+        newUrls.push(url);
+      } catch (err) {
+        console.error('Failed to upload', file?.name, err);
+      }
+    }
+    
+    if (newUrls.length > 0) {
+      setForm(f => ({ ...f, bannerImages: [...(f.bannerImages || []), ...newUrls] }));
+    }
+    
+    setUploadingBanners(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -82,6 +110,7 @@ export default function CategoriesPage() {
       slug: c.slug,
       description: c.description ?? '',
       imageUrl: c.imageUrl ?? '',
+      bannerImages: c.bannerImages ?? [],
       isActive: c.isActive,
       parentId: c.parentId,
     });
@@ -383,12 +412,58 @@ export default function CategoriesPage() {
             <textarea className="form-control" rows={3} value={form.description ?? ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           </div>
           <div className="form-group">
-            <label>Image URL</label>
+            <label>Image URL (Thumbnail)</label>
             <ImageUploader 
               value={form.imageUrl ?? ''} 
               onChange={(val: string) => setForm(f => ({ ...f, imageUrl: val }))} 
               folder="categories"
             />
+          </div>
+          <div className="form-group">
+            <label>Banner Images (Slider)</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {form.bannerImages?.map((url, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <img src={url} alt="banner" style={{ height: 40, width: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--admin-border)' }} />
+                  <input className="form-control" style={{ flex: 1 }} value={url} onChange={e => {
+                    const newBanners = [...(form.bannerImages || [])];
+                    newBanners[i] = e.target.value;
+                    setForm(f => ({ ...f, bannerImages: newBanners }));
+                  }} />
+                  <button className="btn btn--danger btn--icon" onClick={() => {
+                    const newBanners = [...(form.bannerImages || [])];
+                    newBanners.splice(i, 1);
+                    setForm(f => ({ ...f, bannerImages: newBanners }));
+                  }}>
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  multiple 
+                  style={{ display: 'none' }} 
+                  ref={fileInputRef} 
+                  onChange={handleMultipleFiles} 
+                />
+                <button 
+                  type="button" 
+                  className="btn btn--outline" 
+                  style={{ padding: '0 12px', height: '36px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingBanners}
+                >
+                  {uploadingBanners ? (
+                    <div className="admin-spinner" style={{ width: 14, height: 14 }} />
+                  ) : (
+                    <Upload size={14} />
+                  )}
+                  {uploadingBanners ? 'Uploading...' : 'Select Multiple Images'}
+                </button>
+              </div>
+            </div>
           </div>
           <div className="form-group">
             <label>Parent Category</label>

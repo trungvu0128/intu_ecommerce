@@ -6,6 +6,7 @@ public class Category : BaseEntity
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public string? BannerImages { get; set; } // JSON array of image URLs for category slider
     public bool IsActive { get; set; } = true;
     public Guid? ParentId { get; set; }
     public Category? Parent { get; set; }

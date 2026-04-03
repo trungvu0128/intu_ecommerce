@@ -3,7 +3,8 @@ namespace LotusEcommerce.Domain.Entities;
 public enum FeaturedSectionType
 {
     Manual,
-    Category
+    Category,
+    Media
 }
 
 public class FeaturedSection : BaseEntity
@@ -16,6 +17,11 @@ public class FeaturedSection : BaseEntity
     public int GridColumns { get; set; } = 2; // 1, 2, or 4
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+
+    // Background media (image or video) for the section
+    public string? MediaUrl { get; set; }
+    public string? MediaType { get; set; } // "image" | "video" | null
+    public string? LinkUrl { get; set; } 
 
     public List<FeaturedSectionItem> Items { get; set; } = new();
 }

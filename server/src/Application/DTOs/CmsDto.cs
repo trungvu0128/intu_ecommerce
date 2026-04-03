@@ -110,6 +110,9 @@ public class FeaturedSectionDto
     public int GridColumns { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
+    public string? MediaUrl { get; set; }
+    public string? MediaType { get; set; } // "image" | "video" | null
+    public string? LinkUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<FeaturedSectionItemDto> Items { get; set; } = new();
 }
@@ -121,6 +124,7 @@ public class FeaturedSectionItemDto
     public string ProductName { get; set; } = string.Empty;
     public string? ProductSlug { get; set; }
     public string? ProductImage { get; set; }
+    public string? ProductImage2 { get; set; } // Second image for hover effect
     public decimal ProductPrice { get; set; }
     public string? OverlayText { get; set; }
     public string? LinkUrl { get; set; }
@@ -137,6 +141,9 @@ public class CreateFeaturedSectionDto
     public int GridColumns { get; set; } = 2;
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? MediaUrl { get; set; }
+    public string? MediaType { get; set; }
+    public string? LinkUrl { get; set; }
     public List<CreateFeaturedSectionItemDto> Items { get; set; } = new();
 }
 
@@ -158,6 +165,9 @@ public class UpdateFeaturedSectionDto
     public int GridColumns { get; set; } = 2;
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
+    public string? MediaUrl { get; set; }
+    public string? MediaType { get; set; }
+    public string? LinkUrl { get; set; }
     public List<CreateFeaturedSectionItemDto> Items { get; set; } = new();
 }
 

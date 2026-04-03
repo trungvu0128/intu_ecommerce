@@ -81,6 +81,36 @@ public class ImageService : IImageService
         }
     }
 
+    public async Task<string> UploadVideoAsync(Stream stream, string contentType, string subfolder = "")
+    {
+        if (stream == null || stream.Length == 0)
+            throw new ArgumentException("Stream is empty or null");
+
+        try
+        {
+            var fileId = Guid.NewGuid().ToString("N");
+            // Determine if we are uploading to a webm container
+            var extension = contentType == "video/webm" ? "webm" : "mp4";
+            var filename = $"{fileId}.{extension}";
+            var mainKey = string.IsNullOrEmpty(subfolder) ? filename : $"{subfolder}/{filename}";
+
+            // For videos, since we don't have FFmpeg natively built in without external packages,
+            // we will upload the stream directly. The frontend should ideally send webm if possible,
+            // or the server can be extended later with FFMpegCore/Xabe.FFmpeg for actual transcode.
+            // (Due to environment constraints, we perform direct passthrough upload here).
+            stream.Position = 0;
+            await UploadToMinIOAsync(mainKey, stream, contentType);
+            
+            _logger.LogInformation("Successfully uploaded video: {FileId}", fileId);
+            return await GetPublicUrlAsync(mainKey);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to upload video to MinIO");
+            throw;
+        }
+    }
+
     private async Task UploadToMinIOAsync(string key, Stream stream, string contentType, int retryCount = 0)
     {
         var putRequest = new PutObjectRequest

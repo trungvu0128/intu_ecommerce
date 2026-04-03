@@ -15,16 +15,20 @@ interface FeaturedSectionData {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'Manual' | 'Category';
+  type: 'Manual' | 'Category' | 'Media';
   gridColumns: number;
   displayOrder: number;
   isActive: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  linkUrl?: string;
   items: {
     id: string;
     productId: string;
     productName: string;
     productSlug?: string;
     productImage?: string;
+    productImage2?: string;
     productPrice: number;
     overlayText?: string;
     linkUrl?: string;
@@ -37,6 +41,11 @@ const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [featuredSections, setFeaturedSections] = useState<FeaturedSectionData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,11 +54,11 @@ const Home = () => {
           ProductService.getAll({ pageSize: 8 }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://localhost:7101'}/api/FeaturedSections`)
             .then(r => r.json())
-            .then(r => r.data ?? [])
+            .then(r => Array.isArray(r.data) ? r.data : [])
             .catch(() => []),
         ]);
         setProducts(productsData);
-        setFeaturedSections(sectionsRes);
+        setFeaturedSections(Array.isArray(sectionsRes) ? sectionsRes : []);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -64,19 +73,20 @@ const Home = () => {
     <div className="relative min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white">
       <Navbar />
       <main>
-        <Hero />
+        {/* <Hero /> */}
 
         {/* Dynamic Featured Sections from CMS */}
-        {!isLoading && [...featuredSections].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map(section => {
+        {mounted && !isLoading && [...featuredSections].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map(section => {
           if (section.type === 'Category') {
             const catProducts = section.items
-              .sort((a,b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+              .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
               .map(i => ({
                 id: i.id,
                 slug: i.productSlug,
                 name: i.productName,
                 price: `${new Intl.NumberFormat('vi-VN').format(i.productPrice)} VND`,
                 image: i.imageUrl || i.productImage || '',
+                image2: i.productImage2 || undefined,
               }));
             return (
               <div key={section.id}>
@@ -84,18 +94,32 @@ const Home = () => {
               </div>
             );
           }
-          
+          if (section.type === 'Media' && section.mediaUrl) {
+            return (
+              <Banner
+                key={section.id}
+                image={section.mediaUrl}
+                mediaType={section.mediaType}
+                title={section.title}
+                link={section.linkUrl || undefined}
+                className="w-full h-screen"
+                aspectRatio="auto"
+              />
+            );
+          }
+
           if (section.type === 'Manual') {
-            const sortedItems = [...section.items].sort((a,b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+            const sortedItems = [...section.items].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
             // 1 column Manual -> Banner
             if (section.gridColumns === 1 && sortedItems.length >= 1) {
               const item = sortedItems[0];
               return (
                 <Banner
                   key={section.id}
-                  image={item.imageUrl || item.productImage || ''}
+                  image={section.mediaUrl || item.imageUrl || item.productImage || ''}
+                  mediaType={section.mediaType}
                   title={item.overlayText || item.productName || section.title}
-                  link={item.linkUrl || `/product/${item.productSlug || item.productId}`}
+                  link={section.items.length === 1 && !section.mediaUrl ? (item.linkUrl || `/product/${item.productSlug || item.productId}`) : undefined}
                   className="h-[50vh] md:h-[70vh] lg:h-[90vh]"
                   aspectRatio="auto"
                 />

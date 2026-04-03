@@ -34,6 +34,7 @@ public class AdminCategoriesController : BaseApiController
                 Slug = c.Slug,
                 Description = c.Description,
                 ImageUrl = c.ImageUrl,
+                BannerImages = string.IsNullOrEmpty(c.BannerImages) ? null : System.Text.Json.JsonSerializer.Deserialize<List<string>>(c.BannerImages, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
                 IsActive = c.IsActive,
                 ParentId = c.ParentId,
                 ParentName = c.Parent != null ? c.Parent.Name : null,
@@ -64,6 +65,7 @@ public class AdminCategoriesController : BaseApiController
             Slug = c.Slug,
             Description = c.Description,
             ImageUrl = c.ImageUrl,
+            BannerImages = string.IsNullOrEmpty(c.BannerImages) ? null : System.Text.Json.JsonSerializer.Deserialize<List<string>>(c.BannerImages, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
             IsActive = c.IsActive,
             ParentId = c.ParentId,
             ParentName = c.Parent?.Name,
@@ -96,6 +98,7 @@ public class AdminCategoriesController : BaseApiController
             Slug = dto.Slug,
             Description = dto.Description,
             ImageUrl = dto.ImageUrl,
+            BannerImages = dto.BannerImages != null ? System.Text.Json.JsonSerializer.Serialize(dto.BannerImages) : null,
             IsActive = dto.IsActive,
             ParentId = dto.ParentId,
         };
@@ -114,6 +117,7 @@ public class AdminCategoriesController : BaseApiController
         cat.Slug = dto.Slug;
         cat.Description = dto.Description;
         cat.ImageUrl = dto.ImageUrl;
+        cat.BannerImages = dto.BannerImages != null ? System.Text.Json.JsonSerializer.Serialize(dto.BannerImages) : null;
         cat.IsActive = dto.IsActive;
         cat.ParentId = dto.ParentId;
 

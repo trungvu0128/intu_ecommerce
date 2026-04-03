@@ -278,6 +278,9 @@ public class CmsService : ICmsService
             GridColumns = dto.GridColumns,
             DisplayOrder = dto.DisplayOrder,
             IsActive = dto.IsActive,
+            MediaUrl = dto.MediaUrl,
+            MediaType = dto.MediaType,
+            LinkUrl = dto.LinkUrl,
             Items = sectionType == FeaturedSectionType.Manual
                 ? dto.Items.Select(i => new FeaturedSectionItem
                 {
@@ -315,6 +318,9 @@ public class CmsService : ICmsService
         section.GridColumns = dto.GridColumns;
         section.DisplayOrder = dto.DisplayOrder;
         section.IsActive = dto.IsActive;
+        section.MediaUrl = dto.MediaUrl;
+        section.MediaType = dto.MediaType;
+        section.LinkUrl = dto.LinkUrl;
 
         // Replace all items (only for Manual type)
         _context.FeaturedSectionItems.RemoveRange(section.Items);
@@ -361,6 +367,9 @@ public class CmsService : ICmsService
             GridColumns = s.GridColumns,
             DisplayOrder = s.DisplayOrder,
             IsActive = s.IsActive,
+            MediaUrl = s.MediaUrl,
+            MediaType = s.MediaType,
+            LinkUrl = s.LinkUrl,
             CreatedAt = s.CreatedAt,
         };
 
@@ -375,33 +384,42 @@ public class CmsService : ICmsService
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
-            dto.Items = products.Select((p, index) => new FeaturedSectionItemDto
-            {
-                Id = p.Id,
-                ProductId = p.Id,
-                ProductName = p.Name,
-                ProductSlug = p.Slug,
-                ProductImage = _imageService.GetPublicUrlAsync(p.Images.FirstOrDefault(img => img.IsMain)?.Url
-                              ?? p.Images.FirstOrDefault()?.Url ?? string.Empty).Result,
-                ProductPrice = p.BasePrice,
-                DisplayOrder = index,
+            dto.Items = products.Select((p, index) => {
+                var mainImg = p.Images.FirstOrDefault(img => img.IsMain);
+                var secondImg = p.Images.Where(img => !img.IsMain || p.Images.Count == 1).Skip(mainImg != null && !mainImg.IsMain ? 0 : 0).FirstOrDefault(img => img != mainImg);
+                return new FeaturedSectionItemDto
+                {
+                    Id = p.Id,
+                    ProductId = p.Id,
+                    ProductName = p.Name,
+                    ProductSlug = p.Slug,
+                    ProductImage = _imageService.GetPublicUrlAsync(mainImg?.Url ?? p.Images.FirstOrDefault()?.Url ?? string.Empty).Result,
+                    ProductImage2 = secondImg != null ? _imageService.GetPublicUrlAsync(secondImg.Url).Result : null,
+                    ProductPrice = p.BasePrice,
+                    DisplayOrder = index,
+                };
             }).ToList();
         }
         else
         {
-            dto.Items = s.Items.OrderBy(i => i.DisplayOrder).Select(i => new FeaturedSectionItemDto
-            {
-                Id = i.Id,
-                ProductId = i.ProductId,
-                ProductName = i.Product?.Name ?? string.Empty,
-                ProductSlug = i.Product?.Slug,
-                ProductImage = _imageService.GetPublicUrlAsync(i.Product?.Images.FirstOrDefault(img => img.IsMain)?.Url
-                              ?? i.Product?.Images.FirstOrDefault()?.Url ?? string.Empty).Result,
-                ProductPrice = i.Product?.BasePrice ?? 0,
-                OverlayText = i.OverlayText,
-                LinkUrl = i.LinkUrl,
-                ImageUrl = i.ImageUrl,
-                DisplayOrder = i.DisplayOrder,
+            dto.Items = s.Items.OrderBy(i => i.DisplayOrder).Select(i => {
+                var imgs = i.Product?.Images?.ToList() ?? new List<ProductImage>();
+                var mainImg = imgs.FirstOrDefault(img => img.IsMain) ?? imgs.FirstOrDefault();
+                var secondImg = imgs.FirstOrDefault(img => img != mainImg);
+                return new FeaturedSectionItemDto
+                {
+                    Id = i.Id,
+                    ProductId = i.ProductId,
+                    ProductName = i.Product?.Name ?? string.Empty,
+                    ProductSlug = i.Product?.Slug,
+                    ProductImage = _imageService.GetPublicUrlAsync(mainImg?.Url ?? string.Empty).Result,
+                    ProductImage2 = secondImg != null ? _imageService.GetPublicUrlAsync(secondImg.Url).Result : null,
+                    ProductPrice = i.Product?.BasePrice ?? 0,
+                    OverlayText = i.OverlayText,
+                    LinkUrl = i.LinkUrl,
+                    ImageUrl = i.ImageUrl,
+                    DisplayOrder = i.DisplayOrder,
+                };
             }).ToList();
         }
 

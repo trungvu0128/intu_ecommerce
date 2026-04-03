@@ -24,6 +24,7 @@ public class CategoryService : ICategoryService
             Slug = c.Slug,
             Description = c.Description,
             ImageUrl = c.ImageUrl,
+            BannerImages = string.IsNullOrEmpty(c.BannerImages) ? null : System.Text.Json.JsonSerializer.Deserialize<List<string>>(c.BannerImages, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
             IsActive = c.IsActive
         });
     }
@@ -40,6 +41,7 @@ public class CategoryService : ICategoryService
             Slug = c.Slug,
             Description = c.Description,
             ImageUrl = c.ImageUrl,
+            BannerImages = string.IsNullOrEmpty(c.BannerImages) ? null : System.Text.Json.JsonSerializer.Deserialize<List<string>>(c.BannerImages, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true }),
             IsActive = c.IsActive
         };
     }
@@ -51,7 +53,8 @@ public class CategoryService : ICategoryService
             Name = dto.Name,
             Slug = dto.Name.ToLower().Replace(" ", "-"),
             Description = dto.Description,
-            ImageUrl = dto.ImageUrl
+            ImageUrl = dto.ImageUrl,
+            BannerImages = dto.BannerImages != null ? System.Text.Json.JsonSerializer.Serialize(dto.BannerImages) : null
         };
 
         await _repository.AddAsync(category);
@@ -64,6 +67,7 @@ public class CategoryService : ICategoryService
             Slug = category.Slug,
             Description = category.Description,
             ImageUrl = category.ImageUrl,
+            BannerImages = dto.BannerImages,
             IsActive = category.IsActive
         };
     }
@@ -76,6 +80,7 @@ public class CategoryService : ICategoryService
         category.Name = dto.Name;
         category.Description = dto.Description;
         category.ImageUrl = dto.ImageUrl;
+        category.BannerImages = dto.BannerImages != null ? System.Text.Json.JsonSerializer.Serialize(dto.BannerImages) : null;
 
         _repository.Update(category);
         return await _repository.SaveChangesAsync();

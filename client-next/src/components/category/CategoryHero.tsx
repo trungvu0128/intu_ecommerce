@@ -12,7 +12,7 @@ const CategoryHero = ({ images }: CategoryHeroProps) => {
 
   useEffect(() => {
     if (images.length <= 1) return;
-    
+
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
     }, 5000);
@@ -21,20 +21,22 @@ const CategoryHero = ({ images }: CategoryHeroProps) => {
   }, [images.length]);
 
   return (
-    <div className="relative w-full h-[40vh] md:h-[50vh] bg-zinc-100 overflow-hidden">
+    <div className="relative w-full bg-zinc-100 overflow-hidden group">
       {/* Slides */}
       {images.map((img, index) => (
         <div
           key={index}
           className={cn(
-            "absolute inset-0 transition-opacity duration-1000 ease-in-out",
-            index === currentIndex ? "opacity-100" : "opacity-0"
+            "transition-opacity duration-1000 ease-in-out w-full",
+            index === 0 ? "relative" : "absolute inset-0 h-full",
+            index === currentIndex ? "opacity-100 z-10" : "opacity-0 z-0",
+            index === 0 && index !== currentIndex ? "invisible" : ""
           )}
         >
           <img
             src={img}
             alt={`Category Slide ${index + 1}`}
-            className="w-full h-full object-cover"
+            className="w-full h-auto block object-cover"
           />
         </div>
       ))}

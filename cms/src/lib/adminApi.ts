@@ -227,5 +227,14 @@ export const AdminService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then(r => r.data.data);
   },
+
+  uploadVideo: (file: File, subfolder: string = '') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (subfolder) formData.append('subfolder', subfolder);
+    return api.post<{ message: string; data: { url: string } }>('/api/Upload/video', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(r => r.data.data);
+  },
 };
 

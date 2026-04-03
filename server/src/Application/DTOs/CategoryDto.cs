@@ -7,6 +7,7 @@ public class CategoryDto
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public List<string>? BannerImages { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -16,6 +17,7 @@ public class CreateCategoryDto
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public List<string>? BannerImages { get; set; }
     public bool IsActive { get; set; } = true;
     public Guid? ParentId { get; set; }
 }
@@ -26,6 +28,7 @@ public class UpdateCategoryDto
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public List<string>? BannerImages { get; set; }
     public bool IsActive { get; set; }
     public Guid? ParentId { get; set; }
 }
@@ -37,6 +40,7 @@ public class CategoryAdminDto
     public string Slug { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public List<string>? BannerImages { get; set; }
     public bool IsActive { get; set; }
     public Guid? ParentId { get; set; }
     public string? ParentName { get; set; }

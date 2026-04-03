@@ -44,6 +44,33 @@ public class UploadController : ControllerBase
         }
     }
 
+    [HttpPost("video")]
+    [Authorize(Roles = "Admin")] // Uncomment if only admins should upload
+    public async Task<IActionResult> UploadVideo(IFormFile file, [FromForm] string subfolder = "")
+    {
+        if (file == null || file.Length == 0)
+        {
+            return BadRequest("No file uploaded.");
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+            var result = await _imageService.UploadVideoAsync(stream, file.ContentType, subfolder);
+
+            return Ok(new
+            {
+                message = "Video uploaded successfully",
+                data = new { url = result }
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error uploading video");
+            return StatusCode(500, "An error occurred while uploading the video.");
+        }
+    }
+
 
     [HttpGet()]
     [AllowAnonymous]

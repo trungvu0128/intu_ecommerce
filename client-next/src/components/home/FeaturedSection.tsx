@@ -20,10 +20,13 @@ interface FeaturedSectionData {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'Manual' | 'Category';
+  type: 'Manual' | 'Category' | 'Media';
   gridColumns: number;
   displayOrder: number;
   isActive: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  linkUrl?: string;
   items: FeaturedItem[];
 }
 
@@ -55,12 +58,20 @@ const FeaturedSection = ({ section }: { section: FeaturedSectionData }) => {
         {section.items.sort((a,b) => a.displayOrder - b.displayOrder).map((item) => (
           <Link href={item.linkUrl || `/product/${item.productSlug || item.productId}`} key={item.id} className="group relative block overflow-hidden bg-gray-50 aspect-[3/4] rounded-lg">
             {(item.imageUrl || item.productImage) && (
-             <img 
-               src={item.imageUrl || item.productImage || ''} 
-               alt={item.productName} 
-               className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
-               loading="lazy"
-             />
+              (item.imageUrl?.endsWith('.mp4') || item.imageUrl?.endsWith('.webm') || item.productImage?.endsWith('.mp4') || item.productImage?.endsWith('.webm')) ? (
+                <video 
+                  src={item.imageUrl || item.productImage || ''} 
+                  autoPlay loop muted playsInline
+                  className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <img 
+                  src={item.imageUrl || item.productImage || ''} 
+                  alt={item.productName} 
+                  className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+                  loading="lazy"
+                />
+              )
             )}
             
             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

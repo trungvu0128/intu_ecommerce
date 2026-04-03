@@ -86,6 +86,7 @@ export interface AdminCategory {
   slug: string;
   description?: string;
   imageUrl?: string;
+  bannerImages?: string[];
   isActive: boolean;
   parentId?: string;
   parentName?: string;
@@ -108,6 +109,7 @@ export interface CreateCategoryRequest {
   slug: string;
   description?: string;
   imageUrl?: string;
+  bannerImages?: string[];
   isActive: boolean;
   parentId?: string;
 }
@@ -165,12 +167,15 @@ export interface FeaturedSection {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'Manual' | 'Category';
+  type: 'Manual' | 'Category' | 'Media';
   categoryId?: string;
   categoryName?: string;
   gridColumns: number; // 1, 2, or 4
   displayOrder: number;
   isActive: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  linkUrl?: string;
   createdAt: string;
   items: FeaturedSectionItem[];
 }
@@ -191,11 +196,14 @@ export interface FeaturedSectionItem {
 export interface CreateFeaturedSectionRequest {
   title: string;
   subtitle?: string;
-  type: 'Manual' | 'Category';
+  type: 'Manual' | 'Category' | 'Media';
   categoryId?: string;
   gridColumns: number;
   displayOrder: number;
   isActive: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  linkUrl?: string;
   items: CreateFeaturedSectionItemRequest[];
 }
 

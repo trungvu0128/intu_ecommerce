@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MobileLayout from '@/components/mobile/MobileLayout';
-import Hero from '@/components/home/Hero';
 import FeaturedSection from '@/components/home/FeaturedSection';
 import Banner from '@/components/home/Banner';
 import DualBanner from '@/components/home/DualBanner';
@@ -12,10 +11,13 @@ interface FeaturedSectionData {
   id: string;
   title: string;
   subtitle?: string;
-  type: 'Manual' | 'Category';
+  type: 'Manual' | 'Category' | 'Media';
   gridColumns: number;
   displayOrder: number;
   isActive: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  linkUrl?: string;
   items: {
     id: string;
     productId: string;
@@ -60,7 +62,6 @@ export default function MobileHome() {
 
   return (
     <MobileLayout heroPage>
-      <Hero />
 
       {!isLoading && [...featuredSections]
         .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
@@ -101,6 +102,20 @@ export default function MobileHome() {
                   ))}
                 </div>
               </div>
+            );
+          }
+
+          if (section.type === 'Media' && section.mediaUrl) {
+            return (
+              <Banner
+                key={section.id}
+                image={section.mediaUrl}
+                mediaType={section.mediaType}
+                title={section.title}
+                link={section.linkUrl || undefined}
+                className="w-full h-screen"
+                aspectRatio="auto"
+              />
             );
           }
 

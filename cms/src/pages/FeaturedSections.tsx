@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Pencil, Trash2, LayoutGrid, Star, GripVertical, X, Search, Layers, FolderOpen } from 'lucide-react';
+import { Plus, Pencil, Trash2, LayoutGrid, Star, GripVertical, X, Search, Layers, FolderOpen, Image as ImageIcon } from 'lucide-react';
 import Modal from '@/components/Modal';
 import { AdminService } from '@/lib/adminApi';
 import ImageUploader from '@/components/ImageUploader';
@@ -12,9 +12,10 @@ const GRID_OPTIONS = [
   { value: 4, label: '4 Columns', desc: 'Grid 4' },
 ];
 
-const TYPE_OPTIONS: { value: 'Manual' | 'Category'; label: string; desc: string; icon: typeof Layers }[] = [
+const TYPE_OPTIONS: { value: 'Manual' | 'Category' | 'Media'; label: string; desc: string; icon: any }[] = [
   { value: 'Manual', label: 'Manual', desc: 'Pick products individually', icon: Layers },
   { value: 'Category', label: 'Category', desc: 'Auto-fill from a category', icon: FolderOpen },
+  { value: 'Media', label: 'Media', desc: 'Standalone image/video banner', icon: ImageIcon },
 ];
 
 const defaultForm: CreateFeaturedSectionRequest = {
@@ -25,6 +26,9 @@ const defaultForm: CreateFeaturedSectionRequest = {
   gridColumns: 2,
   displayOrder: 0,
   isActive: true,
+  mediaUrl: '',
+  mediaType: undefined,
+  linkUrl: '',
   items: [],
 };
 
@@ -110,6 +114,9 @@ export default function FeaturedSectionsPage() {
       gridColumns: s.gridColumns,
       displayOrder: s.displayOrder,
       isActive: s.isActive,
+      mediaUrl: s.mediaUrl,
+      mediaType: s.mediaType as 'image' | 'video' | undefined,
+      linkUrl: s.linkUrl ?? '',
       items: initialItems,
     });
     setProductSearch('');
@@ -253,6 +260,8 @@ export default function FeaturedSectionsPage() {
                       <span className={`badge badge--${s.type === 'Category' ? 'blue' : 'yellow'}`}>
                         {s.type === 'Category' ? (
                           <><FolderOpen size={11} style={{ marginRight: 4 }} />{s.categoryName || 'Category'}</>
+                        ) : s.type === 'Media' ? (
+                          <><ImageIcon size={11} style={{ marginRight: 4 }} />Media</>
                         ) : (
                           <><Layers size={11} style={{ marginRight: 4 }} />Manual</>
                         )}
@@ -407,7 +416,86 @@ export default function FeaturedSectionsPage() {
             </div>
           )}
 
-          <div className="form-row">
+          <div className="form-group" style={{ marginTop: 16 }}>
+            <label>Section Background Media (Image or Video)</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 4 }}>
+              {(form.mediaUrl) ? (
+                <div style={{ position: 'relative', width: 160, height: 90, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--admin-border)' }}>
+                  {form.mediaType === 'video' ? (
+                    <video src={form.mediaUrl} autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <img src={form.mediaUrl} alt="Background" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  )}
+                  <button
+                    type="button"
+                    style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', borderRadius: '50%', width: 24, height: 24, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    onClick={() => setForm(f => ({ ...f, mediaUrl: '', mediaType: undefined }))}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div style={{ width: 160, height: 90, borderRadius: 8, border: '1px dashed var(--admin-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--admin-surface-2)', color: 'var(--admin-text-muted)' }}>
+                  No Media
+                </div>
+              )}
+
+              <div>
+                <input
+                  type="file"
+                  id="section-media-upload"
+                  accept="image/*,video/mp4,video/webm"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      let url = '';
+                      let type: 'image' | 'video' = 'image';
+                      if (file.type.startsWith('video/')) {
+                        const result = await AdminService.uploadVideo(file, 'featured');
+                        url = typeof result === 'string' ? result : result.url;
+                        type = 'video';
+                      } else {
+                        const result = await AdminService.uploadImage(file, 'featured');
+                        url = typeof result === 'string' ? result : result.originalUrl;
+                        type = 'image';
+                      }
+                      setForm(f => ({ ...f, mediaUrl: url, mediaType: type }));
+                    } catch (err) {
+                      console.error('Media upload failed:', err);
+                      alert('Failed to upload media.');
+                    }
+                    e.target.value = '';
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn btn--secondary"
+                  onClick={() => document.getElementById('section-media-upload')?.click()}
+                >
+                  <Plus size={16} /> Upload Media
+                </button>
+                <p className="admin-page-sub" style={{ marginTop: 8 }}>Supports Images (JPG, PNG, WebP) and Video (MP4, WebM).</p>
+              </div>
+            </div>
+          </div>
+
+          {(form.type === 'Media' || form.type === 'Manual') && (
+            <div className="form-row" style={{ marginTop: 16 }}>
+              <div className="form-group" style={{ flex: 1 }}>
+                <label>Link URL (Target destination when clicked)</label>
+                <input
+                  className="form-control"
+                  value={form.linkUrl ?? ''}
+                  onChange={e => setForm(f => ({ ...f, linkUrl: e.target.value }))}
+                  placeholder="/collections/sale"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="form-row" style={{ marginTop: 16 }}>
             <div className="form-group">
               <label>Display Order</label>
               <input

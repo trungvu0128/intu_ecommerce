@@ -1,19 +1,14 @@
-import type { Metadata } from 'next';
-import Campaign from '@/components/screens/Campaign';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Campaigns – Latest Drops & Lookbooks',
-  description: 'Explore INTU∞ seasonal campaigns, latest drops, and lookbook collections. Discover the newest styles in premium Vietnamese streetwear.',
-  openGraph: {
-    title: 'INTU∞ Campaigns – Latest Drops & Lookbooks',
-    description: 'Explore seasonal campaigns and discover the newest styles from INTU∞.',
-    type: 'website',
-  },
-  alternates: {
-    canonical: '/campaign',
-  },
-};
+import { DeviceSwitch } from '@/components/mobile/DeviceSwitch';
+import Campaign from '@/components/screens/Campaign';
+import MobileCampaign from '@/components/mobile/screens/MobileCampaign';
 
 export default function CampaignPage() {
-  return <Campaign />;
+  return (
+    <DeviceSwitch
+      mobile={() => <MobileCampaign />}
+      desktop={() => <Campaign />}
+    />
+  );
 }

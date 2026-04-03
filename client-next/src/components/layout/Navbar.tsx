@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useCartStore } from '@/store/useCartStore';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -33,10 +32,15 @@ const Navbar = () => {
   const totalItems = useCartStore(s => s.items.reduce((a, i) => a + i.quantity, 0));
 
   const [mounted, setMounted] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const mql = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mql.matches);
     setMounted(true);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
   }, []);
 
   const lastScrollYRef = useRef(0);
@@ -187,7 +191,7 @@ const Navbar = () => {
         </div>
       </nav>
       <Suspense fallback={null}>
-        {isMobile ? (
+        {mounted && isMobile ? (
           <MobileCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         ) : (
           <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
